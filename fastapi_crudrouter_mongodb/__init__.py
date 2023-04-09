@@ -12,6 +12,6 @@ __all__ = [
     "CRUDLookup",
 ]
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __author__ = "Pierre DUVEAU"
 __credits__ = ["Pierre DUVEAU", "Adam Watkins"]

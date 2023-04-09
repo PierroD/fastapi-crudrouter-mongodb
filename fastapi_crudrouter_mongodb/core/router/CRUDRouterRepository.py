@@ -1,5 +1,5 @@
 from bson import ObjectId
-from utils.mongo_model import MongoModel
+from ..models.mongo_model import MongoModel
 
 
 async def get_all(db, model: MongoModel, collection_name) -> list:

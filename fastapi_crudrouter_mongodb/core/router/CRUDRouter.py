@@ -1,7 +1,7 @@
 from typing import Any, Callable, List
 
 from fastapi import HTTPException
-from CRUDRouterFactory import CRUDRouterFactory
+from .CRUDRouterFactory import CRUDRouterFactory
 from . import CRUDRouterRepository
 from .embed.CRUDEmbedRouter import CRUDEmbedRouter
 from .lookup.CRUDLookupRouter import CRUDLookupRouter
