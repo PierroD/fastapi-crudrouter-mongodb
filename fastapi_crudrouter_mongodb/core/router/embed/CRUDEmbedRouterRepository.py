@@ -1,6 +1,6 @@
 from bson import ObjectId
 
-from utils.mongo_model import MongoModel
+from ...models.mongo_model import MongoModel
 
 
 async def get_all(db, id: str, parent_collection_name: str, embed_name: str, model: MongoModel) -> list:
