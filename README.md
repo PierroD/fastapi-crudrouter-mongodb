@@ -8,7 +8,7 @@
 
 ---
 
-**Documentation**: [http://localhost:8000/](http://localhost:8000/)
+**Documentation**: [https://pierrod.github.io/fastapi-crudrouter-mongodb-doc/](https://pierrod.github.io/fastapi-crudrouter-mongodb-doc/)
 
 **Source Code**: [https://github.com/pierrod/fastapi-crudrouter-mongodb](https://github.com/pierrod/fastapi-crudrouter-mongodb)
 
@@ -21,7 +21,7 @@
 ---
 
 Tired of rewriting generic CRUD routes? Need to rapidly prototype a feature for a presentation
-or a hackathon? Thankfully, [fastapi-crudrouter-mongodb](https://github.com/awtkns/fastapi-crudrouter-mongodb) has your back.
+or a hackathon? Thankfully, [fastapi-crudrouter-mongodb](https://pierrod.github.io/fastapi-crudrouter-mongodb-doc/) has your back.
 
 As an extension to the APIRouter included with [FastAPI](https://fastapi.tiangolo.com/), the FastAPI CRUDRouter will automatically
 generate and document your CRUD routes for you, all you have to do is pass your model and maybe your database connection.
