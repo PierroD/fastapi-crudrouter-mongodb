@@ -1,0 +1,81 @@
+site_name: FastAPI CRUD Router Mongodb
+site_description:
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: green
+      accent: amber
+      toggle:
+        icon: material/lightbulb
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: green
+      accent: amber
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to dark mode
+  features:
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github-alt
+  logo: assets/img/logo-white.png
+  favicon: assets/img/logo-color.png
+  language: en
+repo_name: pierrod/fastapi-crudrouter-mongodb
+repo_url: https://github.com/pierrod/fastapi-crudrouter-mongodb
+edit_uri: ""
+nav:
+  - Overview: index.md
+  - Languages:
+      - en: /en/
+      - fr: /fr/
+  - Features:
+      - features/MongoObjectId.md
+      - features/MongoModel.md
+      - features/CRUDRouter.md
+      - features/CRUDLookup.md
+      - features/CRUDEmbed.md
+  - Examples:
+      - examples/minimalist.md
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - extra
+  - admonition
+  - codehilite
+  - attr_list
+  - md_in_html
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/pierrod/fastapi-crudrouter-mongodb
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/pierre-duveau-193586182
+    - icon: fontawesome/solid/globe
+      link: https://github.com/pierrod
+  alternate:
+    - link: /
+      name: en - English
+    - link: /fr/
+      name: fr - français
+extra_css:
+  - css/termynal.css
+  - css/custom.css
+extra_javascript:
+  - js/termynal.js
+  - js/custom.js
