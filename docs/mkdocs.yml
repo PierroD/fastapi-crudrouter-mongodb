@@ -32,9 +32,6 @@ repo_url: https://github.com/pierrod/fastapi-crudrouter-mongodb
 edit_uri: ""
 nav:
   - Overview: index.md
-  - Languages:
-      - en: /en/
-      - fr: /fr/
   - Features:
       - features/MongoObjectId.md
       - features/MongoModel.md
@@ -68,11 +65,6 @@ extra:
       link: https://www.linkedin.com/in/pierre-duveau-193586182
     - icon: fontawesome/solid/globe
       link: https://github.com/pierrod
-  alternate:
-    - link: /
-      name: en - English
-    - link: /fr/
-      name: fr - français
 extra_css:
   - css/termynal.css
   - css/custom.css
