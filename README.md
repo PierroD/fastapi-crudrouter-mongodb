@@ -6,9 +6,11 @@
   <sub>A dynamic FastAPI router that automatically creates CRUD routes for your Mongodb models</sub>
 </p>
 
+<div align="center">
 
 ![Monthly Downloads Shield Badge](https://img.shields.io/pypi/dm/fastapi-crudrouter-mongodb?color=50b052&style=for-the-badge) ![Weekly Downloads Shield Badge](https://img.shields.io/pypi/dw/fastapi-crudrouter-mongodb?color=50b052&style=for-the-badge) ![Python Version](https://img.shields.io/pypi/v/fastapi-crudrouter-mongodb?color=50b052&style=for-the-badge) ![Python Version](https://img.shields.io/pypi/pyversions/fastapi-crudrouter-mongodb?color=3776AB&style=for-the-badge&logo=python&logoColor=white)
 
+</div>
 ---
 
 **Documentation**: [https://pierrod.github.io/fastapi-crudrouter-mongodb-doc/](https://pierrod.github.io/fastapi-crudrouter-mongodb-doc/)
