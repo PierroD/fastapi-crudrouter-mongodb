@@ -1,8 +1,9 @@
 
 
 from abc import abstractmethod
-from typing import Any, Callable
+from typing import Any, Callable, Optional, Sequence
 from fastapi import APIRouter, HTTPException
+from fastapi.params import Depends
 
 
 class CRUDRouterFactory(APIRouter):
@@ -17,8 +18,9 @@ class CRUDRouterFactory(APIRouter):
             self,
             path: str,
             endpoint: Callable,
+            dependencies:Optional[Sequence[Depends]] = None,
             **kwargs: Any) -> None:
-        super().add_api_route(path, endpoint, **kwargs)
+        super().add_api_route(path, endpoint, dependencies=dependencies, **kwargs)
 
     @abstractmethod
     def _get_all(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
