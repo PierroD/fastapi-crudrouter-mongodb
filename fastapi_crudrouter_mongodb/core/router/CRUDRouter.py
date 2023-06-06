@@ -77,6 +77,13 @@ class CRUDRouter(CRUDRouterFactory):
             print(e)
 
     def _get_all(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
+        """
+        Get all documents from the collection.
+
+        :return: A list of documents from the collection.
+        :rtype: list
+        """
+
         async def route() -> list:
             response = await CRUDRouterRepository.get_all(self.db, self.model, self.collection_name)
             if (not len(response)):
@@ -85,6 +92,15 @@ class CRUDRouter(CRUDRouterFactory):
         return route
 
     def _get_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
+        """
+        Get one document from the collection.
+
+        :param id: The id of the document to be retrieved.
+        :type id: str
+        :return: The document from the collection.
+        :rtype: dict
+        """
+
         async def route(id: str) -> self.model:
             response = await CRUDRouterRepository.get_one(self.db, self.model, self.collection_name, id)
             if (response is None):
@@ -92,6 +108,14 @@ class CRUDRouter(CRUDRouterFactory):
             return response
         return route
 
+    """
+    Create one document in the collection.
+
+    :param data: The data of the document to be created.
+    :type data: dict
+    :return: The created document.
+    :rtype: dict
+    """
     def _create_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         async def route(data: self.model) -> self.model:
             response = await CRUDRouterRepository.create_one(self.db, self.model, self.collection_name, data)
@@ -101,6 +125,16 @@ class CRUDRouter(CRUDRouterFactory):
         return route
 
     def _replace_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
+        """
+        Replace one document in the collection.
+
+        :param id: The id of the document to be replaced.
+        :type id: str
+        :param data: The data of the document to be replaced.
+        :type data: dict
+        :return: The replaced document.
+        :rtype: dict
+        """
         async def route(id: str, data: self.model) -> self.model:
             response = await CRUDRouterRepository.replace_one(self.db, self.model, self.collection_name, id, data)
             if (response is None):
@@ -109,6 +143,16 @@ class CRUDRouter(CRUDRouterFactory):
         return route
 
     def _update_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
+        """
+        Update one document in the collection.
+
+        :param id: The id of the document to be updated.
+        :type id: str
+        :param data: The data of the document to be updated.
+        :type data: dict
+        :return: The updated document.
+        :rtype: dict
+        """
         async def route(id: str, data: self.model) -> self.model:
             response = await CRUDRouterRepository.update_one(self.db, self.model, self.collection_name, id, data)
             if (response is None):
@@ -117,14 +161,29 @@ class CRUDRouter(CRUDRouterFactory):
         return route
 
     def _delete_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
+        """
+        Delete one document from the collection.
+        
+        :param id: The id of the document to be deleted.
+        :type id: str
+        :return: The deleted document id.
+        :rtype: dict {"id": "{deleted_id}"}
+        """
         async def route(id: str) -> self.model:
             response = await CRUDRouterRepository.delete_one(self.db, self.collection_name, id)
             if (response is None):
                 raise HTTPException(422, "Document not deleted")
             return response
         return route
+    
 
-    def _register_routes(self):
+    def _register_routes(self) -> None:
+        """
+        Register the routes for the CRUDRouter.
+
+        :return: None
+        :rtype: None
+        """
         if (not self.disable_get_all):
             self._add_api_route(
                 "/",
