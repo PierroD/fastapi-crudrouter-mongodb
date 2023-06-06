@@ -29,24 +29,9 @@ class CRUDRouter(CRUDRouterFactory):
     :type kwargs: Any
     """
 
-    def __init__(self,
-                 model,
-                 db,
-                 collection_name,
-                 lookups: List[CRUDLookup] = [],
-                 disable_get_all=False,
-                 disable_get_one=False,
-                 disable_create_one=False,
-                 disable_replace_one=False,
-                 disable_update_one=False,
-                 disable_delete_one=False,
-                 dependencies_get_all:Optional[Sequence[Depends]] = None,
-                 dependencies_get_one:Optional[Sequence[Depends]] = None,
-                 dependencies_create_one:Optional[Sequence[Depends]] = None,
-                 dependencies_replace_one:Optional[Sequence[Depends]] = None,
-                 dependencies_update_one:Optional[Sequence[Depends]] = None,
-                 dependencies_delete_one:Optional[Sequence[Depends]] = None,
-                 * args, **kwargs) -> None:
+    def __init__(self, model, db, collection_name, lookups: List[CRUDLookup] = None, disable_get_all=False, disable_get_one=False, disable_create_one=False, disable_replace_one=False, disable_update_one=False, disable_delete_one=False, dependencies_get_all:Optional[Sequence[Depends]] = None, dependencies_get_one:Optional[Sequence[Depends]] = None, dependencies_create_one:Optional[Sequence[Depends]] = None, dependencies_replace_one:Optional[Sequence[Depends]] = None, dependencies_update_one:Optional[Sequence[Depends]] = None, dependencies_delete_one:Optional[Sequence[Depends]] = None, *args, **kwargs) -> None:
+        if lookups is None:
+            lookups = []
         super().__init__(model, db, collection_name, *args, **kwargs)
         self.disable_get_all = disable_get_all
         self.disable_get_one = disable_get_one
