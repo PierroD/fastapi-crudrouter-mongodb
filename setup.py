@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="fastapi-crudrouter-mongodb",
-    version="0.0.5",
+    version="0.0.7",
     author="Pierre DUVEAU",
     author_email="",
     description="A dynamic FastAPI router that automatically creates CRUD routes for your mongodb models",
@@ -18,7 +18,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "fastapi",
-        "pydantic",
+        "pydantic==1.10.12",
         "pymongo",
         "motor"
     ],
