@@ -1,4 +1,5 @@
 from bson import ObjectId
+
 from ...models.mongo_model import MongoModel
 
 
@@ -47,7 +48,7 @@ async def get_one(db, collection_name: str, id: str, lookup_id: str, foreign_fie
                     'path': f'${collection_name}',
                     'preserveNullAndEmptyArrays': True,
                 }
-            },
+            }
         ]
     )
     models = []
@@ -61,7 +62,7 @@ async def create_one(db, collection_name: str, id: str, data, foreign_field: str
     Create one document in the database with a lookup
     """
     print(data)
-    response = await db[collection_name].insert_one(data.mongo())
+    response = await db[collection_name].insert_one(data.to_mongo())
     return await get_one(db, collection_name, id, response.inserted_id, foreign_field, local_field, parent_collection_name, parent_model)
 
 
@@ -69,7 +70,7 @@ async def replace_one(db, collection_name: str, id: str, lookup_id: str, data, f
     """
     Update one document in the database with a lookup
     """
-    response = await db[collection_name].replace_one({"_id": ObjectId(lookup_id)}, data.mongo())
+    response = await db[collection_name].replace_one({"_id": ObjectId(lookup_id)}, data.to_mongo())
     return await get_one(db, collection_name, id, lookup_id, foreign_field, local_field, parent_collection_name, parent_model)
 
 
@@ -77,7 +78,7 @@ async def update_one(db, collection_name: str, id: str, lookup_id: str, data, fo
     """
     Update one document in the database with a lookup
     """
-    response = await db[collection_name].update_one({"_id": ObjectId(lookup_id)}, {"$set": data.mongo()})
+    response = await db[collection_name].update_one({"_id": ObjectId(lookup_id)}, {"$set": data.to_mongo()})
     return await get_one(db, collection_name, id, lookup_id, foreign_field, local_field, parent_collection_name, parent_model)
 
 

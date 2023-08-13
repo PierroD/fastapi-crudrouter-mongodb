@@ -55,7 +55,7 @@ async def create_one(db, model: MongoModel, collection_name, data: MongoModel):
     :return: The created document.
     :rtype: dict
     """
-    response = await db[collection_name].insert_one(data.mongo())
+    response = await db[collection_name].insert_one(data.to_mongo())
     response = await db[collection_name].find_one({"_id": response.inserted_id})
     return model.from_mongo(response)
 
@@ -77,7 +77,7 @@ async def replace_one(db, model: MongoModel, collection_name, id: str, data: Mon
     :return: The replaced document.
     :rtype: dict
     """
-    response = await db[collection_name].replace_one({"_id": ObjectId(id)}, data.mongo())
+    response = await db[collection_name].replace_one({"_id": ObjectId(id)}, data.to_mongo())
     response = await db[collection_name].find_one({"_id": response.upserted_id if response.upserted_id is not None else ObjectId(id)})
     return model.from_mongo(response)
 
@@ -99,7 +99,7 @@ async def update_one(db, model: MongoModel, collection_name, id: str, data: Mong
     :return: The updated document.
     :rtype: dict
     """
-    response = await db[collection_name].update_one({"_id": ObjectId(id)}, {"$set": data.mongo()})
+    response = await db[collection_name].update_one({"_id": ObjectId(id)}, {"$set": data.to_mongo()})
     response = await db[collection_name].find_one({"_id": response.upserted_id if response.upserted_id is not None else ObjectId(id)})
     return model.from_mongo(response)
 

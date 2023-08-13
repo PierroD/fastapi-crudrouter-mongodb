@@ -68,7 +68,7 @@ async def create_one(db, id: str, parent_collection_name: str, embed_name: str, 
     """
     Create a new document in the database
     """
-    document_mongo = data.mongo(add_id=True)
+    document_mongo = data.to_mongo(add_id=True)
     document = await db[parent_collection_name].update_one(
         {'_id': ObjectId(id)},
         {'$push': {embed_name: document_mongo}}
@@ -81,7 +81,7 @@ async def update_one(db, id: str, embed_id: str, parent_collection_name: str, em
     """
     Update a document in the database
     """
-    document_mongo = data.mongo(add_id=False)
+    document_mongo = data.to_mongo(add_id=False)
     document = await db[parent_collection_name].update_one(
         {'_id': ObjectId(id), f'{embed_name}._id': ObjectId(embed_id)},
         {'$set': {f'{embed_name}.$': document_mongo}}
