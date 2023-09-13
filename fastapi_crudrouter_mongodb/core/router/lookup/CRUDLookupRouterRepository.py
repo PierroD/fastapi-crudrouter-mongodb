@@ -114,7 +114,7 @@ async def replace_one(
     """
     Update one document in the database with a lookup
     """
-    response = await db[collection_name].replace_one(
+    await db[collection_name].replace_one(
         {"_id": ObjectId(lookup_id)}, data.to_mongo()
     )
     return await get_one(
@@ -143,7 +143,7 @@ async def update_one(
     """
     Update one document in the database with a lookup
     """
-    response = await db[collection_name].update_one(
+    await db[collection_name].update_one(
         {"_id": ObjectId(lookup_id)}, {"$set": data.to_mongo()}
     )
     return await get_one(
@@ -171,7 +171,7 @@ async def delete_one(
     """
     Delete one document in the database with a lookup
     """
-    response = await db[collection_name].delete_one({"_id": ObjectId(lookup_id)})
+    await db[collection_name].delete_one({"_id": ObjectId(lookup_id)})
     return await get_one(
         db,
         collection_name,

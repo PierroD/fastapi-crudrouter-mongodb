@@ -78,7 +78,7 @@ class CRUDRouter(CRUDRouterFactory):
                     ):
                         embed_model = CRUDEmbed(self.model.__fields__[key].type_, key)
                         CRUDEmbedRouter(self, embed_model, *args, **kwargs)
-                except Exception as e:
+                except Exception:
                     continue
 
         except Exception as e:

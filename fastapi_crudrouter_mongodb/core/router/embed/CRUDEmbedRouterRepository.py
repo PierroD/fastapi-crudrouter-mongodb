@@ -22,7 +22,7 @@ async def get_all(
         async for document in documents:
             models.append(model.from_mongo(document))
         return models
-    except Exception as e:
+    except Exception:
         return []
 
 
@@ -50,7 +50,7 @@ async def get_one(
         async for document in document:
             models.append(model.from_mongo(document))
         return models[0]
-    except Exception as e:
+    except Exception:
         return None
 
 
@@ -66,7 +66,7 @@ async def create_one(
     Create a new document in the database
     """
     document_mongo = data.to_mongo(add_id=True)
-    document = await db[parent_collection_name].update_one(
+    await db[parent_collection_name].update_one(
         {"_id": ObjectId(id)}, {"$push": {embed_name: document_mongo}}
     )
 
@@ -86,7 +86,7 @@ async def update_one(
     Update a document in the database
     """
     document_mongo = data.to_mongo(add_id=False)
-    document = await db[parent_collection_name].update_one(
+    await db[parent_collection_name].update_one(
         {"_id": ObjectId(id), f"{embed_name}._id": ObjectId(embed_id)},
         {"$set": {f"{embed_name}.$": document_mongo}},
     )
@@ -106,7 +106,7 @@ async def delete_one(
     Delete a document in the database
     """
     try:
-        document = await db[parent_collection_name].update_one(
+        await db[parent_collection_name].update_one(
             {"_id": ObjectId(id)},
             {"$pull": {f"{embed_name}": {"_id": ObjectId(embed_id)}}},
         )
@@ -118,5 +118,5 @@ async def delete_one(
             is None
             else None
         )
-    except Exception as e:
+    except Exception:
         return None
