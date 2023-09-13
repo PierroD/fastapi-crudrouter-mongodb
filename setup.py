@@ -1,13 +1,12 @@
 from setuptools import setup, find_packages
 
 
-
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
     name="fastapi-crudrouter-mongodb",
-    version="0.0.7",
+    version="0.0.8",
     author="Pierre DUVEAU",
     author_email="",
     description="A dynamic FastAPI router that automatically creates CRUD routes for your mongodb models",
@@ -16,12 +15,7 @@ setup(
     url="https://github.com/pierrod/fastapi-crudrouter-mongodb",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=[
-        "fastapi",
-        "pydantic==1.10.12",
-        "pymongo",
-        "motor"
-    ],
+    install_requires=["fastapi", "pydantic==1.10.12", "pymongo", "motor"],
     classifiers=[
         "Operating System :: OS Independent",
         "Development Status :: 3 - Alpha",
