@@ -4,7 +4,9 @@ from pydantic import BaseModel
 from ..models.mongo_model import MongoModel
 
 
-async def get_all(db, model: MongoModel, collection_name, model_out: Union[BaseModel, None]) -> list:
+async def get_all(
+    db, model: MongoModel, collection_name, model_out: Union[BaseModel, None]
+) -> list:
     """
     Get all documents from the database
 
@@ -26,7 +28,13 @@ async def get_all(db, model: MongoModel, collection_name, model_out: Union[BaseM
     return documents
 
 
-async def get_one(db, model: MongoModel, collection_name: str, id: str, model_out: Union[BaseModel, None]):
+async def get_one(
+    db,
+    model: MongoModel,
+    collection_name: str,
+    id: str,
+    model_out: Union[BaseModel, None],
+):
     """
     Get one document from the database
 
@@ -42,10 +50,20 @@ async def get_one(db, model: MongoModel, collection_name: str, id: str, model_ou
     :rtype: dict
     """
     response = await db[collection_name].find_one({"_id": ObjectId(id)})
-    return model.from_mongo(response) if model_out is None else model.from_mongo(response).convert_to(model=model_out)
+    return (
+        model.from_mongo(response)
+        if model_out is None
+        else model.from_mongo(response).convert_to(model=model_out)
+    )
 
 
-async def create_one(db, model: MongoModel, collection_name, data: MongoModel, model_out: Union[BaseModel, None]):
+async def create_one(
+    db,
+    model: MongoModel,
+    collection_name,
+    data: MongoModel,
+    model_out: Union[BaseModel, None],
+):
     """
     Create one document in the database
 
@@ -62,10 +80,21 @@ async def create_one(db, model: MongoModel, collection_name, data: MongoModel, m
     """
     response = await db[collection_name].insert_one(data.to_mongo())
     response = await db[collection_name].find_one({"_id": response.inserted_id})
-    return model.from_mongo(response) if model_out is None else model.from_mongo(response).convert_to(model=model_out)
+    return (
+        model.from_mongo(response)
+        if model_out is None
+        else model.from_mongo(response).convert_to(model=model_out)
+    )
 
 
-async def replace_one(db, model: MongoModel, collection_name, id: str, data: MongoModel, model_out: Union[BaseModel, None]):
+async def replace_one(
+    db,
+    model: MongoModel,
+    collection_name,
+    id: str,
+    data: MongoModel,
+    model_out: Union[BaseModel, None],
+):
     """
     Update one document in the database
 
@@ -82,12 +111,31 @@ async def replace_one(db, model: MongoModel, collection_name, id: str, data: Mon
     :return: The replaced document.
     :rtype: dict
     """
-    response = await db[collection_name].replace_one({"_id": ObjectId(id)}, data.to_mongo())
-    response = await db[collection_name].find_one({"_id": response.upserted_id if response.upserted_id is not None else ObjectId(id)})
-    return model.from_mongo(response) if model_out is None else model.from_mongo(response).convert_to(model=model_out)
+    response = await db[collection_name].replace_one(
+        {"_id": ObjectId(id)}, data.to_mongo()
+    )
+    response = await db[collection_name].find_one(
+        {
+            "_id": response.upserted_id
+            if response.upserted_id is not None
+            else ObjectId(id)
+        }
+    )
+    return (
+        model.from_mongo(response)
+        if model_out is None
+        else model.from_mongo(response).convert_to(model=model_out)
+    )
 
 
-async def update_one(db, model: MongoModel, collection_name, id: str, data: MongoModel, model_out: Union[BaseModel, None]):
+async def update_one(
+    db,
+    model: MongoModel,
+    collection_name,
+    id: str,
+    data: MongoModel,
+    model_out: Union[BaseModel, None],
+):
     """
     Update one document in the database
 
@@ -104,9 +152,21 @@ async def update_one(db, model: MongoModel, collection_name, id: str, data: Mong
     :return: The updated document.
     :rtype: dict
     """
-    response = await db[collection_name].update_one({"_id": ObjectId(id)}, {"$set": data.to_mongo()})
-    response = await db[collection_name].find_one({"_id": response.upserted_id if response.upserted_id is not None else ObjectId(id)})
-    return model.from_mongo(response) if model_out is None else model.from_mongo(response).convert_to(model=model_out)
+    response = await db[collection_name].update_one(
+        {"_id": ObjectId(id)}, {"$set": data.to_mongo()}
+    )
+    response = await db[collection_name].find_one(
+        {
+            "_id": response.upserted_id
+            if response.upserted_id is not None
+            else ObjectId(id)
+        }
+    )
+    return (
+        model.from_mongo(response)
+        if model_out is None
+        else model.from_mongo(response).convert_to(model=model_out)
+    )
 
 
 async def delete_one(db, collection_name, id):

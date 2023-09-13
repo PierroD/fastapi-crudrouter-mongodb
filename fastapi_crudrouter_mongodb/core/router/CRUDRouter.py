@@ -29,7 +29,28 @@ class CRUDRouter(CRUDRouterFactory):
     :type kwargs: Any
     """
 
-    def __init__(self, model, db, collection_name, model_out: BaseModel = None, lookups: List[CRUDLookup] = None, disable_get_all=False, disable_get_one=False, disable_create_one=False, disable_replace_one=False, disable_update_one=False, disable_delete_one=False, dependencies_get_all:Optional[Sequence[Depends]] = None, dependencies_get_one:Optional[Sequence[Depends]] = None, dependencies_create_one:Optional[Sequence[Depends]] = None, dependencies_replace_one:Optional[Sequence[Depends]] = None, dependencies_update_one:Optional[Sequence[Depends]] = None, dependencies_delete_one:Optional[Sequence[Depends]] = None, *args, **kwargs) -> None:
+    def __init__(
+        self,
+        model,
+        db,
+        collection_name,
+        model_out: BaseModel = None,
+        lookups: List[CRUDLookup] = None,
+        disable_get_all=False,
+        disable_get_one=False,
+        disable_create_one=False,
+        disable_replace_one=False,
+        disable_update_one=False,
+        disable_delete_one=False,
+        dependencies_get_all: Optional[Sequence[Depends]] = None,
+        dependencies_get_one: Optional[Sequence[Depends]] = None,
+        dependencies_create_one: Optional[Sequence[Depends]] = None,
+        dependencies_replace_one: Optional[Sequence[Depends]] = None,
+        dependencies_update_one: Optional[Sequence[Depends]] = None,
+        dependencies_delete_one: Optional[Sequence[Depends]] = None,
+        *args,
+        **kwargs,
+    ) -> None:
         if lookups is None:
             lookups = []
         super().__init__(model, db, collection_name, *args, **kwargs)
@@ -52,9 +73,10 @@ class CRUDRouter(CRUDRouterFactory):
                 CRUDLookupRouter(self, lookup, *args, **kwargs)
             for key, value in self.model.__fields__.items():
                 try:
-                    if (key in self.model.__fields__ and issubclass(self.model.__fields__[key].type_, MongoModel)):
-                        embed_model = CRUDEmbed(
-                            self.model.__fields__[key].type_, key)
+                    if key in self.model.__fields__ and issubclass(
+                        self.model.__fields__[key].type_, MongoModel
+                    ):
+                        embed_model = CRUDEmbed(self.model.__fields__[key].type_, key)
                         CRUDEmbedRouter(self, embed_model, *args, **kwargs)
                 except Exception as e:
                     continue
@@ -71,10 +93,13 @@ class CRUDRouter(CRUDRouterFactory):
         """
 
         async def route() -> list:
-            response = await CRUDRouterRepository.get_all(self.db, self.model, self.collection_name, self.model_out)
-            if (not len(response)):
+            response = await CRUDRouterRepository.get_all(
+                self.db, self.model, self.collection_name, self.model_out
+            )
+            if not len(response):
                 return []
             return response
+
         return route
 
     def _get_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
@@ -88,10 +113,13 @@ class CRUDRouter(CRUDRouterFactory):
         """
 
         async def route(id: str) -> self.model:
-            response = await CRUDRouterRepository.get_one(self.db, self.model, self.collection_name, id, self.model_out)
-            if (response is None):
+            response = await CRUDRouterRepository.get_one(
+                self.db, self.model, self.collection_name, id, self.model_out
+            )
+            if response is None:
                 raise HTTPException(404, "Document not found")
             return response
+
         return route
 
     """
@@ -102,12 +130,16 @@ class CRUDRouter(CRUDRouterFactory):
     :return: The created document.
     :rtype: dict
     """
+
     def _create_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         async def route(data: self.model) -> self.model:
-            response = await CRUDRouterRepository.create_one(self.db, self.model, self.collection_name, data, self.model_out)
-            if (response is None):
+            response = await CRUDRouterRepository.create_one(
+                self.db, self.model, self.collection_name, data, self.model_out
+            )
+            if response is None:
                 raise HTTPException(422, "Document not created")
             return response
+
         return route
 
     def _replace_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
@@ -121,11 +153,15 @@ class CRUDRouter(CRUDRouterFactory):
         :return: The replaced document.
         :rtype: dict
         """
+
         async def route(id: str, data: self.model) -> self.model:
-            response = await CRUDRouterRepository.replace_one(self.db, self.model, self.collection_name, id, data, self.model_out)
-            if (response is None):
+            response = await CRUDRouterRepository.replace_one(
+                self.db, self.model, self.collection_name, id, data, self.model_out
+            )
+            if response is None:
                 raise HTTPException(422, "Document not replaced")
             return response
+
         return route
 
     def _update_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
@@ -139,29 +175,36 @@ class CRUDRouter(CRUDRouterFactory):
         :return: The updated document.
         :rtype: dict
         """
+
         async def route(id: str, data: self.model) -> self.model:
-            response = await CRUDRouterRepository.update_one(self.db, self.model, self.collection_name, id, data, self.model_out)
-            if (response is None):
+            response = await CRUDRouterRepository.update_one(
+                self.db, self.model, self.collection_name, id, data, self.model_out
+            )
+            if response is None:
                 raise HTTPException(422, "Document not updated")
             return response
+
         return route
 
     def _delete_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         """
         Delete one document from the collection.
-        
+
         :param id: The id of the document to be deleted.
         :type id: str
         :return: The deleted document id.
         :rtype: dict {"id": "{deleted_id}"}
         """
+
         async def route(id: str) -> self.model:
-            response = await CRUDRouterRepository.delete_one(self.db, self.collection_name, id)
-            if (response is None):
+            response = await CRUDRouterRepository.delete_one(
+                self.db, self.collection_name, id
+            )
+            if response is None:
                 raise HTTPException(422, "Document not deleted")
             return response
+
         return route
-    
 
     def _register_routes(self) -> None:
         """
@@ -170,16 +213,19 @@ class CRUDRouter(CRUDRouterFactory):
         :return: None
         :rtype: None
         """
-        if (not self.disable_get_all):
+        if not self.disable_get_all:
             self._add_api_route(
                 "/",
                 self._get_all(),
-                response_model=list[self.model] if self.model_out is None else list[self.model_out],
+                response_model=list[self.model]
+                if self.model_out is None
+                else list[self.model_out],
                 dependencies=self.dependencies_get_all,
                 methods=["GET"],
                 summary=f"Get All {self.model.__name__} from the collection",
-                description=f"Get All {self.model.__name__} from the collection")
-        if (not self.disable_get_one):
+                description=f"Get All {self.model.__name__} from the collection",
+            )
+        if not self.disable_get_one:
             self._add_api_route(
                 "/{id}",
                 self._get_one(),
@@ -189,7 +235,7 @@ class CRUDRouter(CRUDRouterFactory):
                 summary=f"Get One {self.model.__name__} by {{id}} from the collection",
                 description=f"Get One {self.model.__name__} by {{id}} from the collection",
             )
-        if (not self.disable_create_one):
+        if not self.disable_create_one:
             self._add_api_route(
                 "/",
                 self._create_one(),
@@ -197,8 +243,9 @@ class CRUDRouter(CRUDRouterFactory):
                 dependencies=self.dependencies_create_one,
                 methods=["POST"],
                 summary=f"Create One {self.model.__name__} in the collection",
-                description=f"Create One {self.model.__name__} in the collection")
-        if (not self.disable_update_one):
+                description=f"Create One {self.model.__name__} in the collection",
+            )
+        if not self.disable_update_one:
             self._add_api_route(
                 "/{id}",
                 self._update_one(),
@@ -208,7 +255,7 @@ class CRUDRouter(CRUDRouterFactory):
                 summary=f"Update One {self.model.__name__} by {{id}} in the collection",
                 description=f"Update One {self.model.__name__} by {{id}} in the collection",
             )
-        if (not self.disable_replace_one):
+        if not self.disable_replace_one:
             self._add_api_route(
                 "/{id}",
                 self._replace_one(),
@@ -218,7 +265,7 @@ class CRUDRouter(CRUDRouterFactory):
                 summary=f"Replace One {self.model.__name__} by {{id}} in the collection",
                 description=f"Replace One {self.model.__name__} by {{id}} in the collection",
             )
-        if (not self.disable_delete_one):
+        if not self.disable_delete_one:
             self._add_api_route(
                 "/{id}",
                 self._delete_one(),

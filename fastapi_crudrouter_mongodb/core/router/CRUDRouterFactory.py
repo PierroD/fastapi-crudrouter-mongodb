@@ -1,5 +1,3 @@
-
-
 from abc import abstractmethod
 from typing import Any, Callable, Optional, Sequence
 from fastapi import APIRouter, HTTPException
@@ -8,18 +6,18 @@ from fastapi.params import Depends
 
 class CRUDRouterFactory(APIRouter):
     """
-        CRUDRouterFactory is an abstract class that implements the basic CRUD operations for a given model.
+    CRUDRouterFactory is an abstract class that implements the basic CRUD operations for a given model.
 
-        :param model: The model to be used for the CRUD operations.
-        :type model: MongoModel
-        :param db: The database to be used for the CRUD operations.
-        :type db: Database
-        :param collection_name: The name of the collection to be used for the CRUD operations.
-        :type collection_name: str
-        :param args: The args to be passed to the APIRouter.
-        :type args: Any
-        :param kwargs: The kwargs to be passed to the APIRouter.
-        :type kwargs: Any
+    :param model: The model to be used for the CRUD operations.
+    :type model: MongoModel
+    :param db: The database to be used for the CRUD operations.
+    :type db: Database
+    :param collection_name: The name of the collection to be used for the CRUD operations.
+    :type collection_name: str
+    :param args: The args to be passed to the APIRouter.
+    :type args: Any
+    :param kwargs: The kwargs to be passed to the APIRouter.
+    :type kwargs: Any
     """
 
     def __init__(self, model, db, collection_name, *args, **kwargs):
@@ -29,11 +27,12 @@ class CRUDRouterFactory(APIRouter):
         super().__init__(*args, **kwargs)
 
     def _add_api_route(
-            self,
-            path: str,
-            endpoint: Callable,
-            dependencies:Optional[Sequence[Depends]] = None,
-            **kwargs: Any) -> None:
+        self,
+        path: str,
+        endpoint: Callable,
+        dependencies: Optional[Sequence[Depends]] = None,
+        **kwargs: Any
+    ) -> None:
         """
         Add a new APIRoute to the router.
 
