@@ -20,7 +20,7 @@ class CRUDEmbedRouter(CRUDEmbedRouterFactory):
         async def route(id: str) -> self.model:
             response = await CRUDEmbedRouterRepository.get_all(self.db, id, self.parent_router.collection_name, self.embed_name, self.model)
             if (not len(response)):
-                raise HTTPException(404, "Empty collection")
+                return []
             return response
         return route
     
