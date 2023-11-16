@@ -196,7 +196,7 @@ class CRUDRouter(CRUDRouterFactory):
         :rtype: dict {"id": "{deleted_id}"}
         """
 
-        async def route(id: str) -> self.model:
+        async def route(id: str) -> MongoModel:
             response = await CRUDRouterRepository.delete_one(
                 self.db, self.collection_name, id
             )
@@ -269,7 +269,7 @@ class CRUDRouter(CRUDRouterFactory):
             self._add_api_route(
                 "/{id}",
                 self._delete_one(),
-                response_model=self.model,
+                response_model=MongoModel,
                 dependencies=self.dependencies_delete_one,
                 methods=["DELETE"],
                 summary=f"Delete One {self.model.__name__} by {{id}} from the collection",
