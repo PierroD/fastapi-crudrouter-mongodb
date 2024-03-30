@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from ...models.CRUDLookup import CRUDLookup
 from .CRUDLookupRouterFactory import CRUDLookupRouterFactory
 from . import CRUDLookupRouterRepository
+from ...models.deleted_mongo_model import DeletedModelOut
 
 
 class CRUDLookupRouter(CRUDLookupRouterFactory):
@@ -11,6 +12,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         self.prefix = "/{id}/" + child_args.prefix
         self.db = parent_router.db
         self.model = child_args.model
+        self.model_out = child_args.model_out if child_args.model_out is not None else parent_router.model_out
         self.collection_name = child_args.collection_name
         self.local_field = child_args.local_field
         self.foreign_field = child_args.foreign_field
@@ -27,6 +29,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
                 self.local_field,
                 self.parent_router.collection_name,
                 self.parent_router.model,
+                self.model_out,
             )
             if response is None:
                 raise HTTPException(404, "Empty collection")
@@ -45,6 +48,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
                 self.local_field,
                 self.parent_router.collection_name,
                 self.parent_router.model,
+                self.model_out,
             )
             if response is None:
                 raise HTTPException(404, "Document not found")
@@ -63,6 +67,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
                 self.local_field,
                 self.parent_router.collection_name,
                 self.parent_router.model,
+                self.model_out,
             )
             if response is None:
                 raise HTTPException(422, "Document not created")
@@ -84,6 +89,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
                 self.local_field,
                 self.parent_router.collection_name,
                 self.parent_router.model,
+                self.model_out,
             )
             if response is None:
                 raise HTTPException(422, "Document not replaced")
@@ -105,6 +111,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
                 self.local_field,
                 self.parent_router.collection_name,
                 self.parent_router.model,
+                self.model_out,
             )
             if response is None:
                 raise HTTPException(422, "Document not updated")
@@ -113,7 +120,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         return route
 
     def _delete_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str, lookup_id: str) -> self.model:
+        async def route(id: str, lookup_id: str) -> DeletedModelOut:
             response = await CRUDLookupRouterRepository.delete_one(
                 self.db,
                 self.collection_name,
@@ -134,7 +141,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         self._add_api_route(
             path=self.prefix,
             endpoint=self._get_all(),
-            response_model=self.parent_router.model,
+            response_model=self.model_out,
             methods=["GET"],
             summary=f"Get All {self.model.__name__} linked to a {self.parent_router.model.__name__}",
             description=f"Get All {self.model.__name__} linked to a {self.parent_router.model.__name__}",
@@ -142,7 +149,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         self._add_api_route(
             path=self.prefix + "/{lookup_id}",
             endpoint=self._get_one(),
-            response_model=self.parent_router.model,
+            response_model=self.model_out,
             methods=["GET"],
             summary=f"Get 0ne {self.model.__name__} linked to a {self.parent_router.model.__name__} by lookup_id",
             description=f"Get One {self.model.__name__} linked to a {self.parent_router.model.__name__} by lookup_id",
@@ -150,7 +157,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         self._add_api_route(
             path=self.prefix,
             endpoint=self._create_one(),
-            response_model=self.parent_router.model,
+            response_model=self.model_out,
             methods=["POST"],
             summary=f"Create One {self.model.__name__} linked to a {self.parent_router.model.__name__}",
             description=f"Create One {self.model.__name__} linked to a {self.parent_router.model.__name__}",
@@ -158,7 +165,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         self._add_api_route(
             path=self.prefix + "/{lookup_id}",
             endpoint=self._replace_one(),
-            response_model=self.parent_router.model,
+            response_model=self.model_out,
             methods=["PUT"],
             summary=f"Replace One {self.model.__name__} linked to a {self.parent_router.model.__name__} by lookup_id",
             description=f"Replace One {self.model.__name__} linked to a {self.parent_router.model.__name__} by lookup_id",
@@ -166,7 +173,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         self._add_api_route(
             path=self.prefix + "/{lookup_id}",
             endpoint=self._update_one(),
-            response_model=self.parent_router.model,
+            response_model=self.model_out,
             methods=["PATCH"],
             summary=f"Update One {self.model.__name__} linked to a {self.parent_router.model.__name__} by lookup_id",
             description=f"Update One {self.model.__name__} linked to a {self.parent_router.model.__name__} by lookup_id",
@@ -174,7 +181,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         self._add_api_route(
             path=self.prefix + "/{lookup_id}",
             endpoint=self._delete_one(),
-            response_model=self.parent_router.model,
+            response_model=DeletedModelOut,
             methods=["DELETE"],
             summary=f"Delete One {self.model.__name__} linked to a {self.parent_router.model.__name__} by lookup_id",
             description=f"Delete One {self.model.__name__} linked to a {self.parent_router.model.__name__} by lookup_id",
