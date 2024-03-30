@@ -1,15 +1,19 @@
 from .core import (
     CRUDRouter,
-    MongoModel,
     MongoObjectId,
+    MongoModel,
+    DeletedModelOut,
     CRUDLookup,
+    CRUDEmbed,
 )
 
 __all__ = [
     "CRUDRouter",
-    "MongoModel",
     "MongoObjectId",
+    "MongoModel",
+    "DeletedModelOut",
     "CRUDLookup",
+    "CRUDEmbed",
 ]
 
 __version__ = "0.0.8"

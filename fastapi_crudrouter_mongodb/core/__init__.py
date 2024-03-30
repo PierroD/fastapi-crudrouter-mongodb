@@ -1,9 +1,11 @@
 from .router import CRUDRouter
-from .models import MongoModel, MongoObjectId, CRUDLookup
+from .models import MongoObjectId, MongoModel, DeletedModelOut, CRUDLookup, CRUDEmbed
 
 __all__ = [
     "CRUDRouter",
-    "MongoModel",
     "MongoObjectId",
+    "MongoModel",
+    "DeletedModelOut",
     "CRUDLookup",
+    "CRUDEmbed",
 ]

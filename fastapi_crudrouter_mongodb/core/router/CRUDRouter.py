@@ -37,6 +37,7 @@ class CRUDRouter(CRUDRouterFactory):
         collection_name,
         model_out: BaseModel = None,
         lookups: List[CRUDLookup] = None,
+        embeds: list[CRUDEmbed] = None,
         disable_get_all=False,
         disable_get_one=False,
         disable_create_one=False,
@@ -55,7 +56,7 @@ class CRUDRouter(CRUDRouterFactory):
         if lookups is None:
             lookups = []
         super().__init__(model, db, collection_name, *args, **kwargs)
-        self.model_out = model_out
+        self.model_out = model if model_out is None else model_out
         self.disable_get_all = disable_get_all
         self.disable_get_one = disable_get_one
         self.disable_create_one = disable_create_one
@@ -70,18 +71,12 @@ class CRUDRouter(CRUDRouterFactory):
         self.dependencies_delete_one = dependencies_delete_one
         self._register_routes()
         try:
-            for lookup in lookups:
-                CRUDLookupRouter(self, lookup, *args, **kwargs)
-            for key, value in self.model.__fields__.items():
-                try:
-                    if key in self.model.__fields__ and issubclass(
-                        self.model.__fields__[key].type_, MongoModel
-                    ):
-                        embed_model = CRUDEmbed(self.model.__fields__[key].type_, key)
-                        CRUDEmbedRouter(self, embed_model, *args, **kwargs)
-                except Exception:
-                    continue
-
+            if(lookups is not None):
+                for lookup in lookups:
+                    CRUDLookupRouter(self, lookup, *args, **kwargs)
+            if(embeds is not None):
+                for embed in embeds:
+                    CRUDEmbedRouter(self, embed, *args, **kwargs)
         except Exception as e:
             print(e)
 
@@ -218,9 +213,7 @@ class CRUDRouter(CRUDRouterFactory):
             self._add_api_route(
                 "/",
                 self._get_all(),
-                response_model=(
-                    list[self.model] if self.model_out is None else list[self.model_out]
-                ),
+                response_model=list[self.model_out],
                 dependencies=self.dependencies_get_all,
                 methods=["GET"],
                 summary=f"Get All {self.model.__name__} from the collection",
@@ -230,7 +223,7 @@ class CRUDRouter(CRUDRouterFactory):
             self._add_api_route(
                 "/{id}",
                 self._get_one(),
-                response_model=self.model if self.model_out is None else self.model_out,
+                response_model=self.model_out ,
                 dependencies=self.dependencies_get_one,
                 methods=["GET"],
                 summary=f"Get One {self.model.__name__} by {{id}} from the collection",
@@ -240,7 +233,7 @@ class CRUDRouter(CRUDRouterFactory):
             self._add_api_route(
                 "/",
                 self._create_one(),
-                response_model=self.model if self.model_out is None else self.model_out,
+                response_model=self.model_out ,
                 dependencies=self.dependencies_create_one,
                 methods=["POST"],
                 summary=f"Create One {self.model.__name__} in the collection",
@@ -250,7 +243,7 @@ class CRUDRouter(CRUDRouterFactory):
             self._add_api_route(
                 "/{id}",
                 self._update_one(),
-                response_model=self.model if self.model_out is None else self.model_out,
+                response_model=self.model_out ,
                 dependencies=self.dependencies_update_one,
                 methods=["PATCH"],
                 summary=f"Update One {self.model.__name__} by {{id}} in the collection",
@@ -260,7 +253,7 @@ class CRUDRouter(CRUDRouterFactory):
             self._add_api_route(
                 "/{id}",
                 self._replace_one(),
-                response_model=self.model if self.model_out is None else self.model_out,
+                response_model=self.model_out ,
                 dependencies=self.dependencies_replace_one,
                 methods=["PUT"],
                 summary=f"Replace One {self.model.__name__} by {{id}} in the collection",
