@@ -9,6 +9,7 @@ from .lookup.CRUDLookupRouter import CRUDLookupRouter
 from ..models.CRUDEmbed import CRUDEmbed
 from ..models.CRUDLookup import CRUDLookup
 from ..models.mongo_model import MongoModel
+from ..models.deleted_mongo_model import DeletedModelOut
 
 
 class CRUDRouter(CRUDRouterFactory):
@@ -196,7 +197,7 @@ class CRUDRouter(CRUDRouterFactory):
         :rtype: dict {"id": "{deleted_id}"}
         """
 
-        async def route(id: str) -> MongoModel:
+        async def route(id: str) -> DeletedModelOut:
             response = await CRUDRouterRepository.delete_one(
                 self.db, self.collection_name, id
             )
@@ -217,9 +218,9 @@ class CRUDRouter(CRUDRouterFactory):
             self._add_api_route(
                 "/",
                 self._get_all(),
-                response_model=list[self.model]
-                if self.model_out is None
-                else list[self.model_out],
+                response_model=(
+                    list[self.model] if self.model_out is None else list[self.model_out]
+                ),
                 dependencies=self.dependencies_get_all,
                 methods=["GET"],
                 summary=f"Get All {self.model.__name__} from the collection",
@@ -269,7 +270,7 @@ class CRUDRouter(CRUDRouterFactory):
             self._add_api_route(
                 "/{id}",
                 self._delete_one(),
-                response_model=MongoModel,
+                response_model=DeletedModelOut,
                 dependencies=self.dependencies_delete_one,
                 methods=["DELETE"],
                 summary=f"Delete One {self.model.__name__} by {{id}} from the collection",

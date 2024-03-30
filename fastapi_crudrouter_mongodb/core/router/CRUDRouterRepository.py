@@ -2,6 +2,7 @@ from typing import Union
 from bson import ObjectId
 from pydantic import BaseModel
 from ..models.mongo_model import MongoModel
+from ..models.deleted_mongo_model import DeletedModelOut
 
 
 async def get_all(
@@ -183,4 +184,4 @@ async def delete_one(db, collection_name, id):
     :rtype: dict
     """
     await db[collection_name].delete_one({"_id": ObjectId(id)})
-    return {"id": id}
+    return DeletedModelOut.from_mongo({"_id": id})
