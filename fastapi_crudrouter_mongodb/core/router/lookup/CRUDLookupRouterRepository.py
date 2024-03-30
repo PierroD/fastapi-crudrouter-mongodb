@@ -86,7 +86,6 @@ async def create_one(
     """
     Create one document in the database with a lookup
     """
-    print(data)
     response = await db[collection_name].insert_one(data.to_mongo())
     return await get_one(
         db,
@@ -114,9 +113,7 @@ async def replace_one(
     """
     Update one document in the database with a lookup
     """
-    await db[collection_name].replace_one(
-        {"_id": ObjectId(lookup_id)}, data.to_mongo()
-    )
+    await db[collection_name].replace_one({"_id": ObjectId(lookup_id)}, data.to_mongo())
     return await get_one(
         db,
         collection_name,

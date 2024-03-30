@@ -54,7 +54,6 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
 
     def _create_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         async def route(id: str, data: self.model) -> self.parent_router.model:
-            print(self.model)
             response = await CRUDLookupRouterRepository.create_one(
                 self.db,
                 self.collection_name,

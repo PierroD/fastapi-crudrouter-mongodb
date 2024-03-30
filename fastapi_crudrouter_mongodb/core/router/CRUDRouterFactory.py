@@ -31,7 +31,7 @@ class CRUDRouterFactory(APIRouter):
         path: str,
         endpoint: Callable,
         dependencies: Optional[Sequence[Depends]] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """
         Add a new APIRoute to the router.
