@@ -6,7 +6,7 @@ from fastapi_crudrouter_mongodb.core.utils.deprecated_util import deprecated
 
 class MongoModel(BaseModel):
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
         json_encoders = {ObjectId: str}
 
     @classmethod
@@ -22,7 +22,7 @@ class MongoModel(BaseModel):
         exclude_none = kwargs.pop("exclude_none", True)
         by_alias = kwargs.pop("by_alias", True)
 
-        parsed = self.dict(
+        parsed = self.model_dump(
             exclude_none=exclude_none,
             by_alias=by_alias,
             **kwargs,
@@ -35,20 +35,11 @@ class MongoModel(BaseModel):
             parsed["_id"] = ObjectId()
         return parsed
 
-    def to_mongo(
-        self,
-        add_id: bool = False,
-        exclude_default: bool = False,
-        by_alias: bool = False,
-        **kwargs
-    ):
-        exclude_unset = kwargs.pop("exclude_unset", True)
-        exclude_default = kwargs.pop("exclude_default", True)
+    def to_mongo(self, add_id: bool = False, by_alias: bool = False, **kwargs):
         by_alias = kwargs.pop("by_alias", True)
 
-        parsed = self.dict(
-            exclude_unset=exclude_unset,
-            exclude_defaults=exclude_default,
+        parsed = self.model_dump(
+            exclude_none=True,
             by_alias=by_alias,
             **kwargs,
         )
