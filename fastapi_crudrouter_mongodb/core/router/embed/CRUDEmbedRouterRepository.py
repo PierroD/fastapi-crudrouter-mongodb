@@ -1,7 +1,7 @@
 from bson import ObjectId
 
 from ...models.mongo_model import MongoModel
-
+from ...models.deleted_mongo_model import DeletedModelOut
 
 async def get_all(
     db, id: str, parent_collection_name: str, embed_name: str, model: MongoModel
@@ -33,7 +33,7 @@ async def get_one(
     parent_collection_name: str,
     embed_name: str,
     model: MongoModel,
-) -> MongoModel:
+) -> MongoModel | None:
     """
     Get a document from the database
     """
@@ -86,6 +86,7 @@ async def update_one(
     Update a document in the database
     """
     document_mongo = data.to_mongo(add_id=False)
+    document_mongo['_id'] = ObjectId(embed_id)
     await db[parent_collection_name].update_one(
         {"_id": ObjectId(id), f"{embed_name}._id": ObjectId(embed_id)},
         {"$set": {f"{embed_name}.$": document_mongo}},
@@ -101,7 +102,7 @@ async def delete_one(
     parent_collection_name: str,
     embed_name: str,
     model: MongoModel,
-) -> MongoModel:
+) -> DeletedModelOut | None:
     """
     Delete a document in the database
     """
@@ -111,7 +112,7 @@ async def delete_one(
             {"$pull": {f"{embed_name}": {"_id": ObjectId(embed_id)}}},
         )
         return (
-            {"deleted": True}
+            DeletedModelOut.from_mongo({"_id": embed_id})
             if await get_one(
                 db, id, embed_id, parent_collection_name, embed_name, model
             )

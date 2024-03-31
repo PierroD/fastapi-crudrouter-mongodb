@@ -1,7 +1,8 @@
-from typing import Any, Callable, List
+from typing import Any, Callable
 from fastapi import HTTPException
 
 from ...models.CRUDEmbed import CRUDEmbed
+from ...models.deleted_mongo_model import DeletedModelOut
 
 from .CRUDEmbedRouterFactory import CRUDEmbedRouterFactory
 from . import CRUDEmbedRouterRepository
@@ -25,9 +26,7 @@ class CRUDEmbedRouter(CRUDEmbedRouterFactory):
                 self.embed_name,
                 self.model,
             )
-            if not len(response):
-                return []
-            return response
+            return response if len(response) else []
 
         return route
 
@@ -81,7 +80,7 @@ class CRUDEmbedRouter(CRUDEmbedRouterFactory):
         return route
 
     def _delete_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str, embed_id: str) -> self.model:
+        async def route(id: str, embed_id: str) -> DeletedModelOut:
             response = await CRUDEmbedRouterRepository.delete_one(
                 self.db,
                 id,
@@ -101,7 +100,7 @@ class CRUDEmbedRouter(CRUDEmbedRouterFactory):
             path=self.prefix,
             endpoint=self._get_all(),
             methods=["GET"],
-            response_model=List[self.model],
+            response_model=list[self.model],
             tags=[self.embed_name],
             summary=f"Get All {self.model.__name__} embedded into a {self.parent_router.model.__name__}",
             description=f"Get All {self.model.__name__} embedded into a {self.parent_router.model.__name__}",
@@ -137,7 +136,7 @@ class CRUDEmbedRouter(CRUDEmbedRouterFactory):
             path=self.prefix + "/{embed_id}",
             endpoint=self._delete_one(),
             methods=["DELETE"],
-            response_model=Any,
+            response_model=DeletedModelOut,
             tags=[self.embed_name],
             summary=f"Delete One {self.model.__name__} embedded into a {self.parent_router.model.__name__}",
             description=f"Delete One {self.model.__name__} embedded into a {self.parent_router.model.__name__}",
