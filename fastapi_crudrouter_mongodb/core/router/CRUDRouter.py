@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence
 from pydantic import BaseModel
 from fastapi import HTTPException
 from fastapi.params import Depends
@@ -8,7 +8,6 @@ from .embed.CRUDEmbedRouter import CRUDEmbedRouter
 from .lookup.CRUDLookupRouter import CRUDLookupRouter
 from ..models.CRUDEmbed import CRUDEmbed
 from ..models.CRUDLookup import CRUDLookup
-from ..models.mongo_model import MongoModel
 from ..models.deleted_mongo_model import DeletedModelOut
 
 
@@ -35,21 +34,21 @@ class CRUDRouter(CRUDRouterFactory):
         model,
         db,
         collection_name,
-        model_out: BaseModel = None,
-        lookups: List[CRUDLookup] = None,
-        embeds: list[CRUDEmbed] = None,
+        model_out: BaseModel | None = None,
+        lookups: list[CRUDLookup] | None = None,
+        embeds: list[CRUDEmbed] | None = None,
         disable_get_all=False,
         disable_get_one=False,
         disable_create_one=False,
         disable_replace_one=False,
         disable_update_one=False,
         disable_delete_one=False,
-        dependencies_get_all: Optional[Sequence[Depends]] = None,
-        dependencies_get_one: Optional[Sequence[Depends]] = None,
-        dependencies_create_one: Optional[Sequence[Depends]] = None,
-        dependencies_replace_one: Optional[Sequence[Depends]] = None,
-        dependencies_update_one: Optional[Sequence[Depends]] = None,
-        dependencies_delete_one: Optional[Sequence[Depends]] = None,
+        dependencies_get_all: Sequence[Depends] | None = None,
+        dependencies_get_one: Sequence[Depends] | None = None,
+        dependencies_create_one: Sequence[Depends] | None = None,
+        dependencies_replace_one: Sequence[Depends] | None = None,
+        dependencies_update_one: Sequence[Depends] | None = None,
+        dependencies_delete_one: Sequence[Depends] | None = None,
         *args,
         **kwargs,
     ) -> None:
@@ -92,9 +91,7 @@ class CRUDRouter(CRUDRouterFactory):
             response = await CRUDRouterRepository.get_all(
                 self.db, self.model, self.collection_name, self.model_out
             )
-            if not len(response):
-                return []
-            return response
+            return response if len(response) else []
 
         return route
 
