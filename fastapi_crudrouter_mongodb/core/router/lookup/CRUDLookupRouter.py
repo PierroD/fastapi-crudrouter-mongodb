@@ -123,13 +123,8 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         async def route(id: str, lookup_id: str) -> DeletedModelOut:
             response = await CRUDLookupRouterRepository.delete_one(
                 self.db,
-                self.collection_name,
-                id,
-                lookup_id,
-                self.foreign_field,
-                self.local_field,
-                self.parent_router.collection_name,
-                self.parent_router.model,
+                self.collection_name,            
+                lookup_id
             )
             if response is None:
                 raise HTTPException(422, "Document not deleted")

@@ -169,13 +169,8 @@ async def update_one(
 async def delete_one(
     db,
     collection_name: str,
-    id: str,
     lookup_id: str,
-    foreign_field: str,
-    local_field: str,
-    parent_collection_name: str,
-    parent_model: MongoModel,
-) -> MongoModel:
+) -> DeletedModelOut:
     """
     Delete one document in the database with a lookup
     """
