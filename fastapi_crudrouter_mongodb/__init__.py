@@ -6,12 +6,14 @@ from .core import (
     CRUDLookup,
     CRUDEmbed,
 )
+from bson import ObjectId
 
 __all__ = [
-    "CRUDRouter",
+    "ObjectId",
     "MongoObjectId",
     "MongoModel",
     "DeletedModelOut",
+    "CRUDRouter",
     "CRUDLookup",
     "CRUDEmbed",
 ]
