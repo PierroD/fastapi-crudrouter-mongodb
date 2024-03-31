@@ -3,6 +3,7 @@ from bson import ObjectId
 from ...models.mongo_model import MongoModel
 from ...models.deleted_mongo_model import DeletedModelOut
 
+
 async def get_all(
     db, id: str, parent_collection_name: str, embed_name: str, model: MongoModel
 ) -> list:
@@ -86,7 +87,7 @@ async def update_one(
     Update a document in the database
     """
     document_mongo = data.to_mongo(add_id=False)
-    document_mongo['_id'] = ObjectId(embed_id)
+    document_mongo["_id"] = ObjectId(embed_id)
     await db[parent_collection_name].update_one(
         {"_id": ObjectId(id), f"{embed_name}._id": ObjectId(embed_id)},
         {"$set": {f"{embed_name}.$": document_mongo}},

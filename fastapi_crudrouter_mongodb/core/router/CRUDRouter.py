@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, Sequence
+from typing import Any, Callable, Sequence
 from pydantic import BaseModel
 from fastapi import HTTPException
 from fastapi.params import Depends
@@ -70,10 +70,10 @@ class CRUDRouter(CRUDRouterFactory):
         self.dependencies_delete_one = dependencies_delete_one
         self._register_routes()
         try:
-            if(lookups is not None):
+            if lookups is not None:
                 for lookup in lookups:
                     CRUDLookupRouter(self, lookup, *args, **kwargs)
-            if(embeds is not None):
+            if embeds is not None:
                 for embed in embeds:
                     CRUDEmbedRouter(self, embed, *args, **kwargs)
         except Exception as e:
@@ -220,7 +220,7 @@ class CRUDRouter(CRUDRouterFactory):
             self._add_api_route(
                 "/{id}",
                 self._get_one(),
-                response_model=self.model_out ,
+                response_model=self.model_out,
                 dependencies=self.dependencies_get_one,
                 methods=["GET"],
                 summary=f"Get One {self.model.__name__} by {{id}} from the collection",
@@ -230,7 +230,7 @@ class CRUDRouter(CRUDRouterFactory):
             self._add_api_route(
                 "/",
                 self._create_one(),
-                response_model=self.model_out ,
+                response_model=self.model_out,
                 dependencies=self.dependencies_create_one,
                 methods=["POST"],
                 summary=f"Create One {self.model.__name__} in the collection",
@@ -240,7 +240,7 @@ class CRUDRouter(CRUDRouterFactory):
             self._add_api_route(
                 "/{id}",
                 self._update_one(),
-                response_model=self.model_out ,
+                response_model=self.model_out,
                 dependencies=self.dependencies_update_one,
                 methods=["PATCH"],
                 summary=f"Update One {self.model.__name__} by {{id}} in the collection",
@@ -250,7 +250,7 @@ class CRUDRouter(CRUDRouterFactory):
             self._add_api_route(
                 "/{id}",
                 self._replace_one(),
-                response_model=self.model_out ,
+                response_model=self.model_out,
                 dependencies=self.dependencies_replace_one,
                 methods=["PUT"],
                 summary=f"Replace One {self.model.__name__} by {{id}} in the collection",

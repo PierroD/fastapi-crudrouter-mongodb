@@ -12,7 +12,11 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         self.prefix = "/{id}/" + child_args.prefix
         self.db = parent_router.db
         self.model = child_args.model
-        self.model_out = child_args.model_out if child_args.model_out is not None else parent_router.model_out
+        self.model_out = (
+            child_args.model_out
+            if child_args.model_out is not None
+            else parent_router.model_out
+        )
         self.collection_name = child_args.collection_name
         self.local_field = child_args.local_field
         self.foreign_field = child_args.foreign_field
@@ -122,9 +126,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
     def _delete_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         async def route(id: str, lookup_id: str) -> DeletedModelOut:
             response = await CRUDLookupRouterRepository.delete_one(
-                self.db,
-                self.collection_name,            
-                lookup_id
+                self.db, self.collection_name, lookup_id
             )
             if response is None:
                 raise HTTPException(422, "Document not deleted")
