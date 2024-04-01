@@ -36,12 +36,11 @@ As a complement to FastAPI's APIRouter, the [FastAPI](https://fastapi.tiangolo.c
 
 ---
 
-<div class="termy">
-```console
-$ pip install fastapi-crudrouter-mongodb
----> 100%
+
 ```
-</div>
+ pip install fastapi-crudrouter-mongodb
+```
+
 
 ## Basic Usage
 
