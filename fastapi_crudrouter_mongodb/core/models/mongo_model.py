@@ -57,20 +57,22 @@ class MongoModel(BaseModel):
         new_model = {}
         for field in dump_model:
             value = dump_model[field]
-            if(value is not None):
-                if(isinstance(value, list)):
+            if value is not None:
+                if isinstance(value, list):
                     value = self._convert_list(value)
-                new_model[field] = value if type(value) is not ObjectId else str(value) 
-                
+                new_model[field] = value if type(value) is not ObjectId else str(value)
+
         return model(**new_model)
 
     def _convert_list(self, list_to_convert: list):
-        if(isinstance(list_to_convert[0], dict)):
+        if isinstance(list_to_convert[0], dict):
             new_list = []
             for sub_object in list_to_convert:
                 for sub_field in sub_object:
                     sub_value = sub_object[sub_field]
-                    sub_object[sub_field] = sub_value if type(sub_value) is not ObjectId else str(sub_value)
+                    sub_object[sub_field] = (
+                        sub_value if type(sub_value) is not ObjectId else str(sub_value)
+                    )
                 new_list.append(sub_object)
             return new_list
         return list_to_convert
