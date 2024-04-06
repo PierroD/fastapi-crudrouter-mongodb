@@ -65,17 +65,19 @@ class MongoModel(BaseModel):
         return model(**new_model)
 
     def _convert_list(self, list_to_convert: list):
-        if isinstance(list_to_convert[0], dict):
-            new_list = []
-            for sub_object in list_to_convert:
-                for sub_field in sub_object:
-                    sub_value = sub_object[sub_field]
+        if not isinstance(list_to_convert[0], dict):
+            return list_to_convert
+        new_list = []
+        for sub_object in list_to_convert:
+            for sub_field in sub_object:
+                sub_value = sub_object[sub_field]
+                if sub_value is not None:
                     sub_object[sub_field] = (
-                        sub_value if type(sub_value) is not ObjectId else str(sub_value)
+                    sub_value if type(sub_value) is not ObjectId else str(sub_value)
                     )
-                new_list.append(sub_object)
-            return new_list
-        return list_to_convert
+            new_list.append(sub_object)
+        return new_list
+
 
     def __init__(self, **pydict):
         super().__init__(**pydict)
