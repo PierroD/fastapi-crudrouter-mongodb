@@ -60,6 +60,8 @@ class MongoModel(BaseModel):
             if value is not None:
                 if isinstance(value, list):
                     value = self._convert_list(value)
+                if isinstance(value, dict):
+                    value = self._convert_dict(value)
                 new_model[field] = value if type(value) is not ObjectId else str(value)
 
         return model(**new_model)
@@ -78,6 +80,12 @@ class MongoModel(BaseModel):
             new_list.append(sub_object)
         return new_list
 
+    def _convert_dict(self, dict_to_convert: dict):
+        return {
+            field: value if type(value) is not ObjectId else str(value)
+            for field, value in dict_to_convert.items()
+            if (value is not None)
+        }
 
     def __init__(self, **pydict):
         super().__init__(**pydict)
