@@ -53,13 +53,15 @@ class MongoModel(BaseModel):
 
     def convert_to(self, model: BaseModel):
         """Convert the current model into another model."""
-        model_dict = dict(self, exclude_none=True)
-        # transform MongoObjectId to string
-        str_id = str(model_dict.get("id"))
-        # pop the `id` to avoid multiple id fields
-        model_dict.pop("id")
+        dump_model = self.model_dump()
+        new_model = {}
+        for field in dump_model:
+            value = dump_model[field]
+            if(value is not None):
+                new_model[field] = value if type(value) is not ObjectId else str(value) 
+                
+        return model(**new_model)
 
-        return model(**model_dict, id=str_id)
 
     def __init__(self, **pydict):
         super().__init__(**pydict)
