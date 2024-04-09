@@ -75,7 +75,7 @@ class MongoModel(BaseModel):
                 sub_value = sub_object[sub_field]
                 if sub_value is not None:
                     sub_object[sub_field] = (
-                    sub_value if type(sub_value) is not ObjectId else str(sub_value)
+                        sub_value if type(sub_value) is not ObjectId else str(sub_value)
                     )
             new_list.append(sub_object)
         return new_list
