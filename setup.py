@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="fastapi-crudrouter-mongodb",
-    version="0.1.1",
+    version="0.1.2",
     author="Pierre DUVEAU",
     author_email="pierre@duveau.org",
     description="A dynamic FastAPI router that automatically creates CRUD routes for your mongodb models",

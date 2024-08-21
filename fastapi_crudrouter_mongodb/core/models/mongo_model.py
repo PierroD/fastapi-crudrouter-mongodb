@@ -1,13 +1,13 @@
 from bson import ObjectId
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
 from fastapi_crudrouter_mongodb.core.utils.deprecated_util import deprecated
 
 
 class MongoModel(BaseModel):
-    class Config:
-        populate_by_name = True
-        json_encoders = {ObjectId: str}
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, json_encoders={ObjectId: str})
+
 
     @classmethod
     def from_mongo(cls, data: dict):
