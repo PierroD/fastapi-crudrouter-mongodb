@@ -67,6 +67,8 @@ class MongoModel(BaseModel):
         return model(**new_model)
 
     def _convert_list(self, list_to_convert: list):
+        if(len(list_to_convert) <= 0):
+            return []        
         if not isinstance(list_to_convert[0], dict):
             return list_to_convert
         new_list = []
