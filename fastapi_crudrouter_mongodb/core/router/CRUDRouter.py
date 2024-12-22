@@ -1,9 +1,8 @@
 from typing import Any, Callable, Sequence
 from pydantic import BaseModel
-from fastapi import HTTPException
 from fastapi.params import Depends
 from .CRUDRouterFactory import CRUDRouterFactory
-from . import CRUDRouterRepository
+from .CRUDRouterService import CRUDRouterService
 from .embed.CRUDEmbedRouter import CRUDEmbedRouter
 from .lookup.CRUDLookupRouter import CRUDLookupRouter
 from ..models.CRUDEmbed import CRUDEmbed
@@ -55,6 +54,7 @@ class CRUDRouter(CRUDRouterFactory):
         if lookups is None:
             lookups = []
         super().__init__(model, db, collection_name, *args, **kwargs)
+        self.service = CRUDRouterService(model, db, collection_name, model_out)
         self.model_out = model if model_out is None else model_out
         self.disable_get_all = disable_get_all
         self.disable_get_one = disable_get_one
@@ -80,122 +80,38 @@ class CRUDRouter(CRUDRouterFactory):
             print(e)
 
     def _get_all(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        """
-        Get all documents from the collection.
-
-        :return: A list of documents from the collection.
-        :rtype: list
-        """
-
-        async def route() -> list:
-            response = await CRUDRouterRepository.get_all(
-                self.db, self.model, self.collection_name, self.model_out
-            )
-            return response if len(response) else []
+        async def route() -> list[self.model]:
+            return await self.service.get_all()
 
         return route
 
     def _get_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        """
-        Get one document from the collection.
-
-        :param id: The id of the document to be retrieved.
-        :type id: str
-        :return: The document from the collection.
-        :rtype: dict
-        """
-
         async def route(id: str) -> self.model:
-            response = await CRUDRouterRepository.get_one(
-                self.db, self.model, self.collection_name, id, self.model_out
-            )
-            if response is None:
-                raise HTTPException(404, "Document not found")
-            return response
+            return await self.service.get_one(id)
 
         return route
 
-    """
-    Create one document in the collection.
-
-    :param data: The data of the document to be created.
-    :type data: dict
-    :return: The created document.
-    :rtype: dict
-    """
-
     def _create_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         async def route(data: self.model) -> self.model:
-            response = await CRUDRouterRepository.create_one(
-                self.db, self.model, self.collection_name, data, self.model_out
-            )
-            if response is None:
-                raise HTTPException(422, "Document not created")
-            return response
+            return await self.service.create_one(data)
 
         return route
 
     def _replace_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        """
-        Replace one document in the collection.
-
-        :param id: The id of the document to be replaced.
-        :type id: str
-        :param data: The data of the document to be replaced.
-        :type data: dict
-        :return: The replaced document.
-        :rtype: dict
-        """
-
         async def route(id: str, data: self.model) -> self.model:
-            response = await CRUDRouterRepository.replace_one(
-                self.db, self.model, self.collection_name, id, data, self.model_out
-            )
-            if response is None:
-                raise HTTPException(422, "Document not replaced")
-            return response
+            return await self.service.replace_one(id, data)
 
         return route
 
     def _update_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        """
-        Update one document in the collection.
-
-        :param id: The id of the document to be updated.
-        :type id: str
-        :param data: The data of the document to be updated.
-        :type data: dict
-        :return: The updated document.
-        :rtype: dict
-        """
-
         async def route(id: str, data: self.model) -> self.model:
-            response = await CRUDRouterRepository.update_one(
-                self.db, self.model, self.collection_name, id, data, self.model_out
-            )
-            if response is None:
-                raise HTTPException(422, "Document not updated")
-            return response
+            return await self.service.update_one(id, data)
 
         return route
 
     def _delete_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        """
-        Delete one document from the collection.
-
-        :param id: The id of the document to be deleted.
-        :type id: str
-        :return: The deleted document id.
-        :rtype: dict {"id": "{deleted_id}"}
-        """
-
         async def route(id: str) -> DeletedModelOut:
-            response = await CRUDRouterRepository.delete_one(
-                self.db, self.collection_name, id
-            )
-            if response is None:
-                raise HTTPException(422, "Document not deleted")
-            return response
+            return await self.service.delete_one(id)
 
         return route
 

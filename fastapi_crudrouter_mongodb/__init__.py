@@ -1,5 +1,6 @@
 from .core import (
     CRUDRouter,
+    CRUDRouterService,
     MongoObjectId,
     MongoModel,
     DeletedModelOut,
@@ -14,10 +15,11 @@ __all__ = [
     "MongoModel",
     "DeletedModelOut",
     "CRUDRouter",
+    "CRUDRouterService",
     "CRUDLookup",
     "CRUDEmbed",
 ]
 
-__version__ = "0.1.2"
+__version__ = "0.1.4"
 __author__ = "Pierre DUVEAU"
 __credits__ = ["Pierre DUVEAU", "Adam Watkins"]

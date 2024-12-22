@@ -117,9 +117,11 @@ async def replace_one(
     )
     response = await db[collection_name].find_one(
         {
-            "_id": response.upserted_id
-            if response.upserted_id is not None
-            else ObjectId(id)
+            "_id": (
+                response.upserted_id
+                if response.upserted_id is not None
+                else ObjectId(id)
+            )
         }
     )
     return (
@@ -158,9 +160,11 @@ async def update_one(
     )
     response = await db[collection_name].find_one(
         {
-            "_id": response.upserted_id
-            if response.upserted_id is not None
-            else ObjectId(id)
+            "_id": (
+                response.upserted_id
+                if response.upserted_id is not None
+                else ObjectId(id)
+            )
         }
     )
     return (
