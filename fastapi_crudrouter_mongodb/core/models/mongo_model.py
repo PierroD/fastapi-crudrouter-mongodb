@@ -68,9 +68,13 @@ class MongoModel(BaseModel):
         return model(**new_model)
 
     def _convert_list(self, list_to_convert: list):
-        if len(list_to_convert) <= 0:
+        if len(list_to_convert) <= 0: # return empty array if list is empty
             return []
-        if not isinstance(list_to_convert[0], dict):
+        
+        if isinstance(list_to_convert[0], ObjectId): # return list of string if it's an ObjectId List
+            return [str(value) for value in list_to_convert]
+        
+        if not isinstance(list_to_convert[0], dict): # convert embeded dict
             return list_to_convert
         new_list = []
         for sub_object in list_to_convert:
