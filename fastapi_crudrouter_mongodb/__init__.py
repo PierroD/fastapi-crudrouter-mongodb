@@ -1,6 +1,7 @@
 from .core import (
     CRUDRouter,
     CRUDService,
+    CRUDRepository,
     MongoObjectId,
     MongoModel,
     CamelModel,
@@ -16,6 +17,7 @@ __all__ = [
     "CamelModel",
     "CRUDRouter",
     "CRUDService",
+    "CRUDRepository",
     "CRUDLookup",
     "CRUDEmbed",
 ]
