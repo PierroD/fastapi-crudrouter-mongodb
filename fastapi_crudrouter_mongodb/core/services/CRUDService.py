@@ -1,11 +1,11 @@
 from typing import Any, Callable
-from fastapi import HTTPException, status
-from ..models.deleted_mongo_model import DeletedModelOut
+from fastapi import HTTPException, status, Response
 from pydantic import BaseModel
-from . import CRUDRouterRepository
+from ..repositories import CRUDRepository
+from ..utils.deprecated_util import deprecated
 
 
-class CRUDRouterService:
+class CRUDService:
     """
     CRUDRouterService is a class that implements the CRUD operations for a given model.
 
@@ -31,6 +31,7 @@ class CRUDRouterService:
         model,
         db,
         collection_name: str,
+        identifier_field: str = "_id",
         model_out: BaseModel | None = None,
         *args,
         **kwargs
@@ -38,32 +39,38 @@ class CRUDRouterService:
         self.model = model
         self.db = db
         self.collection_name = collection_name
+        self.identifier_field = identifier_field
         self.model_out = model_out
+        self.repository = CRUDRepository(model=model, db=db, collection_name=collection_name, identifier_field=identifier_field, model_out=model_out)
 
+    @deprecated("get_all is deprecated. Use find_all instead.")
     async def get_all(self, *args: Any, **kwargs: Any) -> list[Any]:
+        return await self.find_all(*args, **kwargs)
+
+    async def find_all(self, *args: Any, **kwargs: Any) -> list[Any]:
         """
-        Get all documents from the collection.
+        Find all documents from the collection.
 
         :return: A list of documents from the collection.
         :rtype: list
         """
-        response = await CRUDRouterRepository.get_all(
-            self.db, self.model, self.collection_name, self.model_out
-        )
+        response = await self.repository.find_all()
         return response if len(response) else []
 
+    @deprecated("get_one is deprecated. Use find_one instead.")
     async def get_one(self, id: str, *args: Any, **kwargs: Any) -> Callable[..., Any]:
+        return await self.find_one(id, *args, **kwargs)
+
+    async def find_one(self, id: str, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         """
-        Get one document from the collection.
+        Find one document from the collection.
 
         :param id: The id of the document to be retrieved.
         :type id: str
         :return: The document from the collection.
         :rtype: dict
         """
-        response = await CRUDRouterRepository.get_one(
-            self.db, self.model, self.collection_name, id, self.model_out
-        )
+        response = await self.repository.find_one(id)
         if response is None:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Document not found")
 
@@ -78,8 +85,8 @@ class CRUDRouterService:
         :return: The created document.
         :rtype: dict
         """
-        response = await CRUDRouterRepository.create_one(
-            self.db, self.model, self.collection_name, data, self.model_out
+        response = await self.repository.create_one(
+            data
         )
         if response is None:
             raise HTTPException(
@@ -100,8 +107,8 @@ class CRUDRouterService:
         :return: The replaced document.
         :rtype: dict
         """
-        response = await CRUDRouterRepository.replace_one(
-            self.db, self.model, self.collection_name, id, data, self.model_out
+        response = await self.repository.replace_one(
+            id, data
         )
         if response is None:
             raise HTTPException(
@@ -122,8 +129,8 @@ class CRUDRouterService:
         :return: The updated document.
         :rtype: dict
         """
-        response = await CRUDRouterRepository.update_one(
-            self.db, self.model, self.collection_name, id, data, self.model_out
+        response = await self.repository.update_one(
+            id, data
         )
         if response is None:
             raise HTTPException(
@@ -131,7 +138,7 @@ class CRUDRouterService:
             )
         return response
 
-    async def delete_one(self, id: str, *args: Any, **kwargs: Any) -> DeletedModelOut:
+    async def delete_one(self, id: str, *args: Any, **kwargs: Any) -> Response:
         """
         Delete one document from the collection.
 
@@ -140,11 +147,11 @@ class CRUDRouterService:
         :return: The deleted document id.
         :rtype: dict {"id": "{deleted_id}"}
         """
-        response = await CRUDRouterRepository.delete_one(
-            self.db, self.collection_name, id
+        response = await self.repository.delete_one(
+            id
         )
         if response is None:
             raise HTTPException(
                 status.HTTP_422_UNPROCESSABLE_ENTITY, "Document not deleted"
             )
-        return response
+        return Response(status_code=status.HTTP_204_NO_CONTENT)

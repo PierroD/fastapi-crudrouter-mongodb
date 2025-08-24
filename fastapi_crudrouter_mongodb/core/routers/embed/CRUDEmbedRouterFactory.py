@@ -1,7 +1,7 @@
 from typing import Any, Callable
 from fastapi import APIRouter
 
-from ..CRUDRouterFactory import CRUDRouterFactory
+from ...factories.CRUDRouterFactory import CRUDRouterFactory
 from ...models.mongo_model import MongoModel
 
 

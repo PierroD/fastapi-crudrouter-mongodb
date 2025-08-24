@@ -1,12 +1,13 @@
-from .router import CRUDRouter, CRUDRouterService
-from .models import MongoObjectId, MongoModel, DeletedModelOut, CRUDLookup, CRUDEmbed
+from .routers import CRUDRouter
+from .services import CRUDService
+from .models import MongoObjectId, MongoModel, CamelModel, CRUDLookup, CRUDEmbed
 
 __all__ = [
     "CRUDRouter",
-    "CRUDRouterService",
+    "CRUDService",
     "MongoObjectId",
     "MongoModel",
-    "DeletedModelOut",
+    "CamelModel",
     "CRUDLookup",
     "CRUDEmbed",
 ]

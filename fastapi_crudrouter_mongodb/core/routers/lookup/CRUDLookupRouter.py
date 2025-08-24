@@ -1,11 +1,9 @@
 from typing import Any, Callable
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Response
 from ...models.CRUDLookup import CRUDLookup
-from .CRUDLookupRouterFactory import CRUDLookupRouterFactory
+from ...factories.CRUDLookupRouterFactory import CRUDLookupRouterFactory
 from . import CRUDLookupRouterRepository
-from ...models.deleted_mongo_model import DeletedModelOut
-
 
 class CRUDLookupRouter(CRUDLookupRouterFactory):
     def __init__(self, parent_router, child_args: CRUDLookup, *args, **kwargs):
@@ -124,7 +122,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         return route
 
     def _delete_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str, lookup_id: str) -> DeletedModelOut:
+        async def route(id: str, lookup_id: str) -> Response:
             response = await CRUDLookupRouterRepository.delete_one(
                 self.db, self.collection_name, lookup_id
             )
@@ -178,7 +176,6 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         self._add_api_route(
             path=self.prefix + "/{lookup_id}",
             endpoint=self._delete_one(),
-            response_model=DeletedModelOut,
             methods=["DELETE"],
             summary=f"Delete One {self.model.__name__} linked to a {self.parent_router.model.__name__} by lookup_id",
             description=f"Delete One {self.model.__name__} linked to a {self.parent_router.model.__name__} by lookup_id",

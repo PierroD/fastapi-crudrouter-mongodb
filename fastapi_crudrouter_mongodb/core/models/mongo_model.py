@@ -1,14 +1,10 @@
 from bson import ObjectId
-from pydantic import BaseModel, ConfigDict
-from pydantic.alias_generators import to_camel
+from .camel_model import CamelModel
 
 from fastapi_crudrouter_mongodb.core.utils.deprecated_util import deprecated
 
 
-class MongoModel(BaseModel):
-    model_config = ConfigDict(
-        alias_generator=to_camel, populate_by_name=True, json_encoders={ObjectId: str}
-    )
+class MongoModel(CamelModel):
 
     @classmethod
     def from_mongo(cls, data: dict):
@@ -52,7 +48,7 @@ class MongoModel(BaseModel):
             parsed["_id"] = ObjectId()
         return parsed
 
-    def convert_to(self, model: BaseModel):
+    def convert_to(self, model: CamelModel):
         """Convert the current model into another model."""
         dump_model = self.model_dump()
         new_model = {}

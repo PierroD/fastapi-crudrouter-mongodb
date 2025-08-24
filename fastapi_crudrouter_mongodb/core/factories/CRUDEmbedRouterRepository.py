@@ -1,7 +1,7 @@
 from bson import ObjectId
-
-from ...models.mongo_model import MongoModel
-from ...models.deleted_mongo_model import DeletedModelOut
+from fastapi import Response
+from ..models import DeletedModelOut
+from ..models.mongo_model import MongoModel
 
 
 async def get_all(
@@ -103,7 +103,7 @@ async def delete_one(
     parent_collection_name: str,
     embed_name: str,
     model: MongoModel,
-) -> DeletedModelOut | None:
+) -> Response | None:
     """
     Delete a document in the database
     """

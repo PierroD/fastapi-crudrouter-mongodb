@@ -1,8 +1,8 @@
 from typing import Any, Callable
 from fastapi import APIRouter
 
-from ..CRUDRouterFactory import CRUDRouterFactory
-from ...models.CRUDLookup import CRUDLookup
+from .CRUDRouterFactory import CRUDRouterFactory
+from ..models.CRUDLookup import CRUDLookup
 
 
 class CRUDLookupRouterFactory(APIRouter):

@@ -5,7 +5,7 @@ from ...models.CRUDEmbed import CRUDEmbed
 from ...models.deleted_mongo_model import DeletedModelOut
 
 from .CRUDEmbedRouterFactory import CRUDEmbedRouterFactory
-from . import CRUDEmbedRouterRepository
+from ...factories import CRUDEmbedRouterRepository
 
 
 class CRUDEmbedRouter(CRUDEmbedRouterFactory):

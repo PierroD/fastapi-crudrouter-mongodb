@@ -1,13 +1,13 @@
 from typing import Any, Callable, Sequence
 from pydantic import BaseModel
+from fastapi import Response
 from fastapi.params import Depends
-from .CRUDRouterFactory import CRUDRouterFactory
-from .CRUDRouterService import CRUDRouterService
+from ..factories import CRUDRouterFactory
+from ..services import CRUDService
 from .embed.CRUDEmbedRouter import CRUDEmbedRouter
 from .lookup.CRUDLookupRouter import CRUDLookupRouter
 from ..models.CRUDEmbed import CRUDEmbed
 from ..models.CRUDLookup import CRUDLookup
-from ..models.deleted_mongo_model import DeletedModelOut
 
 
 class CRUDRouter(CRUDRouterFactory):
@@ -33,6 +33,7 @@ class CRUDRouter(CRUDRouterFactory):
         model,
         db,
         collection_name,
+        identifier_field: str = "_id",
         model_out: BaseModel | None = None,
         lookups: list[CRUDLookup] | None = None,
         embeds: list[CRUDEmbed] | None = None,
@@ -54,7 +55,8 @@ class CRUDRouter(CRUDRouterFactory):
         if lookups is None:
             lookups = []
         super().__init__(model, db, collection_name, *args, **kwargs)
-        self.service = CRUDRouterService(model, db, collection_name, model_out)
+        self.service = CRUDService(model, db, collection_name, identifier_field, model_out)
+        self.identifier_field = identifier_field
         self.model_out = model if model_out is None else model_out
         self.disable_get_all = disable_get_all
         self.disable_get_one = disable_get_one
@@ -81,13 +83,13 @@ class CRUDRouter(CRUDRouterFactory):
 
     def _get_all(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         async def route() -> list[self.model]:
-            return await self.service.get_all()
+            return await self.service.find_all()
 
         return route
 
     def _get_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         async def route(id: str) -> self.model:
-            return await self.service.get_one(id)
+            return await self.service.find_one(id)
 
         return route
 
@@ -110,7 +112,7 @@ class CRUDRouter(CRUDRouterFactory):
         return route
 
     def _delete_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str) -> DeletedModelOut:
+        async def route(id: str) -> Response:
             return await self.service.delete_one(id)
 
         return route
@@ -122,6 +124,8 @@ class CRUDRouter(CRUDRouterFactory):
         :return: None
         :rtype: None
         """
+        identifier_path = f"/{{{self.identifier_field if self.identifier_field != "_id" else "id"}}}"
+
         if not self.disable_get_all:
             self._add_api_route(
                 "/",
@@ -134,7 +138,7 @@ class CRUDRouter(CRUDRouterFactory):
             )
         if not self.disable_get_one:
             self._add_api_route(
-                "/{id}",
+                f"{identifier_path}",
                 self._get_one(),
                 response_model=self.model_out,
                 dependencies=self.dependencies_get_one,
@@ -154,7 +158,7 @@ class CRUDRouter(CRUDRouterFactory):
             )
         if not self.disable_update_one:
             self._add_api_route(
-                "/{id}",
+                f"{identifier_path}",
                 self._update_one(),
                 response_model=self.model_out,
                 dependencies=self.dependencies_update_one,
@@ -164,7 +168,7 @@ class CRUDRouter(CRUDRouterFactory):
             )
         if not self.disable_replace_one:
             self._add_api_route(
-                "/{id}",
+                f"{identifier_path}",
                 self._replace_one(),
                 response_model=self.model_out,
                 dependencies=self.dependencies_replace_one,
@@ -174,9 +178,8 @@ class CRUDRouter(CRUDRouterFactory):
             )
         if not self.disable_delete_one:
             self._add_api_route(
-                "/{id}",
+                f"{identifier_path}",
                 self._delete_one(),
-                response_model=DeletedModelOut,
                 dependencies=self.dependencies_delete_one,
                 methods=["DELETE"],
                 summary=f"Delete One {self.model.__name__} by {{id}} from the collection",
