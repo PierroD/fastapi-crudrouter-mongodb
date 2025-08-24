@@ -56,7 +56,7 @@ class CRUDRepository:
 
     async def find_all(self) -> list:
         """
-        Get all documents from the database
+        Find all documents from the database
 
         :return: A list of documents from the database.
         :rtype: list
@@ -78,7 +78,7 @@ class CRUDRepository:
         id: str,
     ):
         """
-        Get one document from the database
+        Find one document from the database
 
         :type id: str
         :return: The document from the database.
