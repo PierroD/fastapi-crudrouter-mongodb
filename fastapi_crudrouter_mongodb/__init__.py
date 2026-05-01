@@ -3,6 +3,7 @@ from .core import (
     CRUDService,
     CRUDRepository,
     MongoObjectId,
+    ObjectIdType,
     MongoModel,
     CamelModel,
     CRUDLookup,
@@ -14,6 +15,7 @@ from bson import ObjectId
 __all__ = [
     "ObjectId",
     "MongoObjectId",
+    "ObjectIdType",
     "MongoModel",
     "CamelModel",
     "CRUDRouter",

@@ -3,6 +3,7 @@ from .services import CRUDService
 from .repositories import CRUDRepository
 from .models import (
     MongoObjectId,
+    ObjectIdType,
     MongoModel,
     CamelModel,
     CRUDLookup,
@@ -15,6 +16,7 @@ __all__ = [
     "CRUDService",
     "CRUDRepository",
     "MongoObjectId",
+    "ObjectIdType",
     "MongoModel",
     "CamelModel",
     "CRUDLookup",
