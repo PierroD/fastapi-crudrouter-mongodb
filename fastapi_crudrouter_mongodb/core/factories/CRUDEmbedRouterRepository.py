@@ -5,19 +5,36 @@ from ..models.mongo_model import MongoModel
 
 
 async def get_all(
-    db, id: str, parent_collection_name: str, embed_name: str, model: MongoModel
+    db,
+    id: str,
+    parent_collection_name: str,
+    embed_name: str,
+    model: MongoModel,
+    skip: int | None = None,
+    limit: int | None = None,
+    sort_by: str | None = None,
+    order_by: int = 1,
+    filters: dict | None = None,
 ) -> list:
     """
     Get all embeded documents from the database
     """
     try:
-        documents = db[parent_collection_name].aggregate(
-            [
-                {"$match": {"_id": ObjectId(id)}},
-                {"$unwind": f"${embed_name}"},
-                {"$replaceRoot": {"newRoot": f"${embed_name}"}},
-            ]
-        )
+        pipeline = [
+            {"$match": {"_id": ObjectId(id)}},
+            {"$unwind": f"${embed_name}"},
+            {"$replaceRoot": {"newRoot": f"${embed_name}"}},
+        ]
+        if filters is not None:
+            pipeline.append({"$match": filters})
+        if sort_by is not None:
+            pipeline.append({"$sort": {sort_by: order_by}})
+        if skip is not None:
+            pipeline.append({"$skip": skip})
+        if limit is not None:
+            pipeline.append({"$limit": limit})
+
+        documents = db[parent_collection_name].aggregate(pipeline)
 
         models = []
         async for document in documents:

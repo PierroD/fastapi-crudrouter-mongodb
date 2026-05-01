@@ -1,4 +1,5 @@
 from bson import ObjectId
+from pydantic import BaseModel
 from .camel_model import CamelModel
 
 from fastapi_crudrouter_mongodb.core.utils.deprecated_util import deprecated
@@ -55,37 +56,28 @@ class MongoModel(CamelModel):
         for field in dump_model:
             value = dump_model[field]
             if value is not None:
-                if isinstance(value, list):
-                    value = self._convert_list(value)
-                if isinstance(value, dict):
-                    value = self._convert_dict(value)
-                new_model[field] = value if type(value) is not ObjectId else str(value)
+                new_model[field] = self._convert_value(value)
 
         return model(**new_model)
 
+    def _convert_value(self, value):
+        if isinstance(value, list):
+            return self._convert_list(value)
+        if isinstance(value, BaseModel):
+            return self._convert_dict(value.model_dump())
+        if isinstance(value, dict):
+            return self._convert_dict(value)
+        return value if type(value) is not ObjectId else str(value)
+
     def _convert_list(self, list_to_convert: list):
-        if len(list_to_convert) <= 0: # return empty array if list is empty
+        if len(list_to_convert) <= 0:  # return empty array if list is empty
             return []
-        
-        if isinstance(list_to_convert[0], ObjectId): # return list of string if it's an ObjectId List
-            return [str(value) for value in list_to_convert]
-        
-        if not isinstance(list_to_convert[0], dict): # convert embeded dict
-            return list_to_convert
-        new_list = []
-        for sub_object in list_to_convert:
-            for sub_field in sub_object:
-                sub_value = sub_object[sub_field]
-                if sub_value is not None:
-                    sub_object[sub_field] = (
-                        sub_value if type(sub_value) is not ObjectId else str(sub_value)
-                    )
-            new_list.append(sub_object)
-        return new_list
+
+        return [self._convert_value(value) for value in list_to_convert]
 
     def _convert_dict(self, dict_to_convert: dict):
         return {
-            field: value if type(value) is not ObjectId else str(value)
+            field: self._convert_value(value)
             for field, value in dict_to_convert.items()
             if (value is not None)
         }

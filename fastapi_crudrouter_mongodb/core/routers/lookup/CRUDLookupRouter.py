@@ -1,13 +1,21 @@
+import json
 from typing import Any, Callable
 
-from fastapi import HTTPException, Response
+from fastapi import HTTPException, Response, Query, status
 from ...models.CRUDLookup import CRUDLookup
 from ...factories.CRUDLookupRouterFactory import CRUDLookupRouterFactory
 from . import CRUDLookupRouterRepository
+from ...utils.sorting import normalize_order_by
+
 
 class CRUDLookupRouter(CRUDLookupRouterFactory):
     def __init__(self, parent_router, child_args: CRUDLookup, *args, **kwargs):
-        self.prefix = "/{id}/" + child_args.prefix
+        identifier_display = (
+            parent_router.identifier_field
+            if parent_router.identifier_field != "_id"
+            else "id"
+        )
+        self.prefix = f"/{{{identifier_display}}}/{child_args.prefix}"
         self.db = parent_router.db
         self.model = child_args.model
         self.model_out = (
@@ -22,7 +30,30 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         self._register_routes()
 
     def _get_all(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str) -> self.parent_router.model:
+        async def route(
+            id: str,
+            skip: int | None = Query(None, ge=0),
+            limit: int | None = Query(None, ge=1),
+            sort_by: str | None = Query(None),
+            order_by: str | None = Query(None),
+            filters: str | None = Query(None),
+        ) -> Any:
+            filters_dict = None
+            if filters is not None:
+                try:
+                    filters_dict = json.loads(filters)
+                except json.JSONDecodeError as e:
+                    raise HTTPException(
+                        status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        "Invalid JSON in filters parameter",
+                    ) from e
+            try:
+                normalized_order_by = normalize_order_by(order_by)
+            except ValueError as e:
+                raise HTTPException(
+                    status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    str(e),
+                ) from e
             response = await CRUDLookupRouterRepository.get_all(
                 self.db,
                 self.collection_name,
@@ -32,6 +63,11 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
                 self.parent_router.collection_name,
                 self.parent_router.model,
                 self.model_out,
+                skip,
+                limit,
+                sort_by,
+                normalized_order_by,
+                filters_dict,
             )
             if response is None:
                 raise HTTPException(404, "Empty collection")

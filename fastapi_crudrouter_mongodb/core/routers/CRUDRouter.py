@@ -1,6 +1,7 @@
+import json
 from typing import Any, Callable, Sequence
 from pydantic import BaseModel
-from fastapi import Response
+from fastapi import Response, Query, HTTPException, status
 from fastapi.params import Depends
 from ..factories import CRUDRouterFactory
 from ..services import CRUDService
@@ -8,6 +9,20 @@ from .embed.CRUDEmbedRouter import CRUDEmbedRouter
 from .lookup.CRUDLookupRouter import CRUDLookupRouter
 from ..models.CRUDEmbed import CRUDEmbed
 from ..models.CRUDLookup import CRUDLookup
+from ..models.CRUDPopulate import CRUDPopulate
+
+
+def _validate_order_by(order_by: str | None) -> str | None:
+    if order_by is None:
+        return None
+
+    normalized_value = order_by.upper()
+    if normalized_value not in {"ASC", "DESC"}:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="order_by must be either ASC or DESC",
+        )
+    return normalized_value
 
 
 class CRUDRouter(CRUDRouterFactory):
@@ -37,6 +52,7 @@ class CRUDRouter(CRUDRouterFactory):
         model_out: BaseModel | None = None,
         lookups: list[CRUDLookup] | None = None,
         embeds: list[CRUDEmbed] | None = None,
+        populates: list[CRUDPopulate] | None = None,
         disable_get_all=False,
         disable_get_one=False,
         disable_create_one=False,
@@ -49,13 +65,16 @@ class CRUDRouter(CRUDRouterFactory):
         dependencies_replace_one: Sequence[Depends] | None = None,
         dependencies_update_one: Sequence[Depends] | None = None,
         dependencies_delete_one: Sequence[Depends] | None = None,
+        filter_dependency: Callable | None = None,
         *args,
         **kwargs,
     ) -> None:
         if lookups is None:
             lookups = []
         super().__init__(model, db, collection_name, *args, **kwargs)
-        self.service = CRUDService(model, db, collection_name, identifier_field, model_out)
+        self.service = CRUDService(
+            model, db, collection_name, identifier_field, model_out
+        )
         self.identifier_field = identifier_field
         self.model_out = model if model_out is None else model_out
         self.disable_get_all = disable_get_all
@@ -70,6 +89,11 @@ class CRUDRouter(CRUDRouterFactory):
         self.dependencies_replace_one = dependencies_replace_one
         self.dependencies_update_one = dependencies_update_one
         self.dependencies_delete_one = dependencies_delete_one
+        self.filter_dependency = filter_dependency
+        self.populates = populates or []
+        self._has_populate_without_model_out = (
+            len(self.populates) > 0 and model_out is None
+        )
         self._register_routes()
         try:
             if lookups is not None:
@@ -82,14 +106,58 @@ class CRUDRouter(CRUDRouterFactory):
             print(e)
 
     def _get_all(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route() -> list[self.model]:
-            return await self.service.find_all()
+        if self.filter_dependency is None:
 
-        return route
+            async def route_default(
+                skip: int | None = Query(None, ge=0),
+                limit: int | None = Query(None, ge=1),
+                sort_by: str | None = Query(None),
+                order_by: str | None = Query(None),
+                filters: str | None = Query(None),
+            ) -> list[Any]:
+                filters_dict = None
+                normalized_order_by = _validate_order_by(order_by)
+                if filters is not None:
+                    try:
+                        filters_dict = json.loads(filters)
+                    except json.JSONDecodeError as e:
+                        raise HTTPException(
+                            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="Invalid JSON in filters parameter",
+                        ) from e
+                return await self.service.find_all(
+                    skip=skip,
+                    limit=limit,
+                    sort_by=sort_by,
+                    order_by=normalized_order_by,
+                    filters=filters_dict,
+                    populates=self.populates,
+                )
+
+            return route_default
+
+        async def route_with_dependency(
+            skip: int | None = Query(None, ge=0),
+            limit: int | None = Query(None, ge=1),
+            sort_by: str | None = Query(None),
+            order_by: str | None = Query(None),
+            filters_dependency: Any = Depends(self.filter_dependency),
+        ) -> list[Any]:
+            normalized_order_by = _validate_order_by(order_by)
+            return await self.service.find_all(
+                skip=skip,
+                limit=limit,
+                sort_by=sort_by,
+                order_by=normalized_order_by,
+                filters=filters_dependency,
+                populates=self.populates,
+            )
+
+        return route_with_dependency
 
     def _get_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         async def route(id: str) -> self.model:
-            return await self.service.find_one(id)
+            return await self.service.find_one(id, populates=self.populates)
 
         return route
 
@@ -124,13 +192,20 @@ class CRUDRouter(CRUDRouterFactory):
         :return: None
         :rtype: None
         """
-        identifier_path = f"/{{{self.identifier_field if self.identifier_field != "_id" else "id"}}}"
+        identifier_display = (
+            self.identifier_field if self.identifier_field != "_id" else "id"
+        )
+        identifier_path = f"/{{{identifier_display}}}"
 
         if not self.disable_get_all:
             self._add_api_route(
-                "/",
+                "",
                 self._get_all(),
-                response_model=list[self.model_out],
+                response_model=(
+                    None
+                    if self._has_populate_without_model_out
+                    else list[self.model_out]
+                ),
                 dependencies=self.dependencies_get_all,
                 methods=["GET"],
                 summary=f"Get All {self.model.__name__} from the collection",
@@ -140,15 +215,17 @@ class CRUDRouter(CRUDRouterFactory):
             self._add_api_route(
                 f"{identifier_path}",
                 self._get_one(),
-                response_model=self.model_out,
+                response_model=(
+                    None if self._has_populate_without_model_out else self.model_out
+                ),
                 dependencies=self.dependencies_get_one,
                 methods=["GET"],
-                summary=f"Get One {self.model.__name__} by {{id}} from the collection",
-                description=f"Get One {self.model.__name__} by {{id}} from the collection",
+                summary=f"Get One {self.model.__name__} by {{{identifier_display}}} from the collection",
+                description=f"Get One {self.model.__name__} by {{{identifier_display}}} from the collection",
             )
         if not self.disable_create_one:
             self._add_api_route(
-                "/",
+                "",
                 self._create_one(),
                 response_model=self.model_out,
                 dependencies=self.dependencies_create_one,
@@ -163,8 +240,8 @@ class CRUDRouter(CRUDRouterFactory):
                 response_model=self.model_out,
                 dependencies=self.dependencies_update_one,
                 methods=["PATCH"],
-                summary=f"Update One {self.model.__name__} by {{id}} in the collection",
-                description=f"Update One {self.model.__name__} by {{id}} in the collection",
+                summary=f"Update One {self.model.__name__} by {{{identifier_display}}} in the collection",
+                description=f"Update One {self.model.__name__} by {{{identifier_display}}} in the collection",
             )
         if not self.disable_replace_one:
             self._add_api_route(
@@ -173,8 +250,8 @@ class CRUDRouter(CRUDRouterFactory):
                 response_model=self.model_out,
                 dependencies=self.dependencies_replace_one,
                 methods=["PUT"],
-                summary=f"Replace One {self.model.__name__} by {{id}} in the collection",
-                description=f"Replace One {self.model.__name__} by {{id}} in the collection",
+                summary=f"Replace One {self.model.__name__} by {{{identifier_display}}} in the collection",
+                description=f"Replace One {self.model.__name__} by {{{identifier_display}}} in the collection",
             )
         if not self.disable_delete_one:
             self._add_api_route(
@@ -182,6 +259,6 @@ class CRUDRouter(CRUDRouterFactory):
                 self._delete_one(),
                 dependencies=self.dependencies_delete_one,
                 methods=["DELETE"],
-                summary=f"Delete One {self.model.__name__} by {{id}} from the collection",
-                description=f"Delete One {self.model.__name__} by {{id}} from the collection",
+                summary=f"Delete One {self.model.__name__} by {{{identifier_display}}} from the collection",
+                description=f"Delete One {self.model.__name__} by {{{identifier_display}}} from the collection",
             )

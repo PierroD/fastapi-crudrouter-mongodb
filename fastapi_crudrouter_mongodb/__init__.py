@@ -7,6 +7,7 @@ from .core import (
     CamelModel,
     CRUDLookup,
     CRUDEmbed,
+    CRUDPopulate,
 )
 from bson import ObjectId
 
@@ -20,8 +21,9 @@ __all__ = [
     "CRUDRepository",
     "CRUDLookup",
     "CRUDEmbed",
+    "CRUDPopulate",
 ]
 
-__version__ = "0.1.4"
+__version__ = "1.0.0"
 __author__ = "Pierre DUVEAU"
 __credits__ = ["Pierre DUVEAU", "Adam Watkins"]

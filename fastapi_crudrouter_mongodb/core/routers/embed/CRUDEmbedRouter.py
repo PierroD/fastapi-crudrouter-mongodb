@@ -1,8 +1,10 @@
+import json
 from typing import Any, Callable
-from fastapi import HTTPException
+from fastapi import HTTPException, Query, status
 
 from ...models.CRUDEmbed import CRUDEmbed
 from ...models.deleted_mongo_model import DeletedModelOut
+from ...utils.sorting import normalize_order_by
 
 from .CRUDEmbedRouterFactory import CRUDEmbedRouterFactory
 from ...factories import CRUDEmbedRouterRepository
@@ -10,7 +12,12 @@ from ...factories import CRUDEmbedRouterRepository
 
 class CRUDEmbedRouter(CRUDEmbedRouterFactory):
     def __init__(self, parent_router, child_args: CRUDEmbed, *args, **kwargs) -> None:
-        self.prefix = "/{id}/" + child_args.embed_name
+        identifier_display = (
+            parent_router.identifier_field
+            if parent_router.identifier_field != "_id"
+            else "id"
+        )
+        self.prefix = f"/{{{identifier_display}}}/{child_args.embed_name}"
         self.db = parent_router.db
         self.model = child_args.model
         self.embed_name = child_args.embed_name
@@ -18,13 +25,41 @@ class CRUDEmbedRouter(CRUDEmbedRouterFactory):
         self._register_routes()
 
     def _get_all(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str) -> self.model:
+        async def route(
+            id: str,
+            skip: int | None = Query(None, ge=0),
+            limit: int | None = Query(None, ge=1),
+            sort_by: str | None = Query(None),
+            order_by: str | None = Query(None),
+            filters: str | None = Query(None),
+        ) -> list[Any]:
+            filters_dict = None
+            if filters is not None:
+                try:
+                    filters_dict = json.loads(filters)
+                except json.JSONDecodeError as e:
+                    raise HTTPException(
+                        status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        "Invalid JSON in filters parameter",
+                    ) from e
+            try:
+                normalized_order_by = normalize_order_by(order_by)
+            except ValueError as e:
+                raise HTTPException(
+                    status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    str(e),
+                ) from e
             response = await CRUDEmbedRouterRepository.get_all(
                 self.db,
                 id,
                 self.parent_router.collection_name,
                 self.embed_name,
                 self.model,
+                skip,
+                limit,
+                sort_by,
+                normalized_order_by,
+                filters_dict,
             )
             return response if len(response) else []
 
