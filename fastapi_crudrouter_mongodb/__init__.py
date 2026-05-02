@@ -26,6 +26,6 @@ __all__ = [
     "CRUDPopulate",
 ]
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "Pierre DUVEAU"
 __credits__ = ["Pierre DUVEAU", "Adam Watkins"]

@@ -1,7 +1,7 @@
 import json
-from typing import Any, Callable
+from typing import Annotated, Any, Callable
 
-from fastapi import HTTPException, Response, Query, status
+from fastapi import HTTPException, Response, Query, Path, status
 from ...models.CRUDLookup import CRUDLookup
 from ...factories.CRUDLookupRouterFactory import CRUDLookupRouterFactory
 from . import CRUDLookupRouterRepository
@@ -10,12 +10,12 @@ from ...utils.sorting import normalize_order_by
 
 class CRUDLookupRouter(CRUDLookupRouterFactory):
     def __init__(self, parent_router, child_args: CRUDLookup, *args, **kwargs):
-        identifier_display = (
+        self.identifier_display = (
             parent_router.identifier_field
             if parent_router.identifier_field != "_id"
             else "id"
         )
-        self.prefix = f"/{{{identifier_display}}}/{child_args.prefix}"
+        self.prefix = f"/{{{self.identifier_display}}}/{child_args.prefix}"
         self.db = parent_router.db
         self.model = child_args.model
         self.model_out = (
@@ -31,7 +31,7 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
 
     def _get_all(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         async def route(
-            id: str,
+            id: Annotated[str, Path(alias=self.identifier_display)],
             skip: int | None = Query(None, ge=0),
             limit: int | None = Query(None, ge=1),
             sort_by: str | None = Query(None),
@@ -76,7 +76,10 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         return route
 
     def _get_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str, lookup_id: str) -> self.parent_router.model:
+        async def route(
+            id: Annotated[str, Path(alias=self.identifier_display)],
+            lookup_id: str,
+        ) -> self.parent_router.model:
             response = await CRUDLookupRouterRepository.get_one(
                 self.db,
                 self.collection_name,
@@ -95,7 +98,10 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         return route
 
     def _create_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str, data: self.model) -> self.parent_router.model:
+        async def route(
+            id: Annotated[str, Path(alias=self.identifier_display)],
+            data: self.model,
+        ) -> self.parent_router.model:
             response = await CRUDLookupRouterRepository.create_one(
                 self.db,
                 self.collection_name,
@@ -115,7 +121,9 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
 
     def _replace_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         async def route(
-            id: str, lookup_id: str, data: self.model
+            id: Annotated[str, Path(alias=self.identifier_display)],
+            lookup_id: str,
+            data: self.model,
         ) -> self.parent_router.model:
             response = await CRUDLookupRouterRepository.replace_one(
                 self.db,
@@ -137,7 +145,9 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
 
     def _update_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         async def route(
-            id: str, lookup_id: str, data: self.model
+            id: Annotated[str, Path(alias=self.identifier_display)],
+            lookup_id: str,
+            data: self.model,
         ) -> self.parent_router.model:
             response = await CRUDLookupRouterRepository.update_one(
                 self.db,
@@ -158,7 +168,10 @@ class CRUDLookupRouter(CRUDLookupRouterFactory):
         return route
 
     def _delete_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str, lookup_id: str) -> Response:
+        async def route(
+            id: Annotated[str, Path(alias=self.identifier_display)],
+            lookup_id: str,
+        ) -> Response:
             response = await CRUDLookupRouterRepository.delete_one(
                 self.db, self.collection_name, lookup_id
             )

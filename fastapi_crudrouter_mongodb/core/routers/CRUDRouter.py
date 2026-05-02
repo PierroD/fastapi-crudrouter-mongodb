@@ -1,7 +1,7 @@
 import json
-from typing import Any, Callable, Sequence
+from typing import Annotated, Any, Callable, Sequence
 from pydantic import BaseModel
-from fastapi import Response, Query, HTTPException, status
+from fastapi import Response, Query, HTTPException, Path, status
 from fastapi.params import Depends
 from ..factories import CRUDRouterFactory
 from ..services import CRUDService
@@ -156,7 +156,13 @@ class CRUDRouter(CRUDRouterFactory):
         return route_with_dependency
 
     def _get_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str) -> self.model:
+        identifier_display = (
+            self.identifier_field if self.identifier_field != "_id" else "id"
+        )
+
+        async def route(
+            id: Annotated[str, Path(alias=identifier_display)],
+        ) -> self.model:
             return await self.service.find_one(id, populates=self.populates)
 
         return route
@@ -168,19 +174,37 @@ class CRUDRouter(CRUDRouterFactory):
         return route
 
     def _replace_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str, data: self.model) -> self.model:
+        identifier_display = (
+            self.identifier_field if self.identifier_field != "_id" else "id"
+        )
+
+        async def route(
+            id: Annotated[str, Path(alias=identifier_display)],
+            data: self.model,
+        ) -> self.model:
             return await self.service.replace_one(id, data)
 
         return route
 
     def _update_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str, data: self.model) -> self.model:
+        identifier_display = (
+            self.identifier_field if self.identifier_field != "_id" else "id"
+        )
+
+        async def route(
+            id: Annotated[str, Path(alias=identifier_display)],
+            data: self.model,
+        ) -> self.model:
             return await self.service.update_one(id, data)
 
         return route
 
     def _delete_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str) -> Response:
+        identifier_display = (
+            self.identifier_field if self.identifier_field != "_id" else "id"
+        )
+
+        async def route(id: Annotated[str, Path(alias=identifier_display)]) -> Response:
             return await self.service.delete_one(id)
 
         return route

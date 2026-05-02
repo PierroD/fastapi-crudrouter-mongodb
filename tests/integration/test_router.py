@@ -140,6 +140,38 @@ async def test_identifier_field_in_routes(db):
 
 
 @pytest.mark.asyncio
+async def test_identifier_field_email_path_runtime(db):
+    class UserByEmail(TestItem):
+        email: str
+
+    app = FastAPI()
+    router = CRUDRouter(
+        model=UserByEmail,
+        db=db,
+        collection_name="users",
+        prefix="/users",
+        identifier_field="email",
+    )
+    app.include_router(router)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+        follow_redirects=True,
+    ) as async_client:
+        created = await async_client.post(
+            "/users",
+            json={"name": "Alice", "email": "alice@example.com"},
+        )
+        assert created.status_code == 200
+
+        response = await async_client.get("/users/alice@example.com")
+
+    assert response.status_code == 200
+    assert response.json()["email"] == "alice@example.com"
+
+
+@pytest.mark.asyncio
 async def test_get_all_with_limit(client):
     for i in range(5):
         await client.post("/items", json={"name": f"Item {i}"})

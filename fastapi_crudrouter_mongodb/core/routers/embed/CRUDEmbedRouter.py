@@ -1,6 +1,6 @@
 import json
-from typing import Any, Callable
-from fastapi import HTTPException, Query, status
+from typing import Annotated, Any, Callable
+from fastapi import HTTPException, Query, Path, status
 
 from ...models.CRUDEmbed import CRUDEmbed
 from ...models.deleted_mongo_model import DeletedModelOut
@@ -12,12 +12,12 @@ from ...factories import CRUDEmbedRouterRepository
 
 class CRUDEmbedRouter(CRUDEmbedRouterFactory):
     def __init__(self, parent_router, child_args: CRUDEmbed, *args, **kwargs) -> None:
-        identifier_display = (
+        self.identifier_display = (
             parent_router.identifier_field
             if parent_router.identifier_field != "_id"
             else "id"
         )
-        self.prefix = f"/{{{identifier_display}}}/{child_args.embed_name}"
+        self.prefix = f"/{{{self.identifier_display}}}/{child_args.embed_name}"
         self.db = parent_router.db
         self.model = child_args.model
         self.embed_name = child_args.embed_name
@@ -26,7 +26,7 @@ class CRUDEmbedRouter(CRUDEmbedRouterFactory):
 
     def _get_all(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
         async def route(
-            id: str,
+            id: Annotated[str, Path(alias=self.identifier_display)],
             skip: int | None = Query(None, ge=0),
             limit: int | None = Query(None, ge=1),
             sort_by: str | None = Query(None),
@@ -66,7 +66,10 @@ class CRUDEmbedRouter(CRUDEmbedRouterFactory):
         return route
 
     def _get_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str, embed_id: str) -> self.model:
+        async def route(
+            id: Annotated[str, Path(alias=self.identifier_display)],
+            embed_id: str,
+        ) -> self.model:
             response = await CRUDEmbedRouterRepository.get_one(
                 self.db,
                 id,
@@ -82,7 +85,10 @@ class CRUDEmbedRouter(CRUDEmbedRouterFactory):
         return route
 
     def _create_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str, data: self.model) -> self.model:
+        async def route(
+            id: Annotated[str, Path(alias=self.identifier_display)],
+            data: self.model,
+        ) -> self.model:
             response = await CRUDEmbedRouterRepository.create_one(
                 self.db,
                 id,
@@ -98,7 +104,11 @@ class CRUDEmbedRouter(CRUDEmbedRouterFactory):
         return route
 
     def _update_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str, embed_id: str, data: self.model) -> self.model:
+        async def route(
+            id: Annotated[str, Path(alias=self.identifier_display)],
+            embed_id: str,
+            data: self.model,
+        ) -> self.model:
             response = await CRUDEmbedRouterRepository.update_one(
                 self.db,
                 id,
@@ -115,7 +125,10 @@ class CRUDEmbedRouter(CRUDEmbedRouterFactory):
         return route
 
     def _delete_one(self, *args: Any, **kwargs: Any) -> Callable[..., Any]:
-        async def route(id: str, embed_id: str) -> DeletedModelOut:
+        async def route(
+            id: Annotated[str, Path(alias=self.identifier_display)],
+            embed_id: str,
+        ) -> DeletedModelOut:
             response = await CRUDEmbedRouterRepository.delete_one(
                 self.db,
                 id,

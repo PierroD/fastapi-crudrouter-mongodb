@@ -95,11 +95,9 @@ Requires Python `>=3.10`.
 I will provide more examples in the future, but for now, here is a basic example of how to use the FastAPI CRUDRouter for Mongodb :seedling:.
 
 ```py linenums="1"
-from typing import Annotated
 from fastapi import FastAPI
 from fastapi_crudrouter_mongodb import (
-    ObjectId,
-    MongoObjectId,
+    ObjectIdType,
     MongoModel,
     CRUDRouter,
 )
@@ -113,7 +111,7 @@ db = client.local
 
 # Database Model
 class UserModel(MongoModel):
-    id: Annotated[ObjectId, MongoObjectId] | None = None
+    id: ObjectIdType | None = None
     name: str
     email: str
     password: str
